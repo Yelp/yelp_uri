@@ -1,0 +1,14 @@
+*.egg-info
+*.iml
+*.py[co]
+.*.sw[a-z]
+.coverage
+.idea
+.pre-commit-files
+.project
+.pydevproject
+.tox
+.venv.touch
+/venv*
+coverage-html
+dist
