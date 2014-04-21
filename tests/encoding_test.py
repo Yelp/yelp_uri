@@ -183,37 +183,45 @@ class TestRecode(object):
         assert processed == expected
 
 
-@pytest.mark.parametrize(('charname', 'chars', 'pathchars', 'expected_url'), [
+examples = pytest.mark.parametrize(('charname', 'chars', 'pathchars', 'expected_url'), [
     ('latin1', u'ü', u'\x81', 'http://xn--mnchen-3ya.com/m%C3%BCchen/%C2%81'),
     ('win1252', u'€', '', 'http://xn--mnchen-ic1c.com/m%E2%82%ACchen/'),
     ('utf8', u'プŁ☃', '', 'http://xn--mnchen-3db6836e0mua.com/m%E3%83%97%C5%81%E2%98%83chen/'),
     ('emoji', u'🐱', '', 'http://xn--mnchen-i844e.com/m%F0%9F%90%B1chen/'),
     ('ascii', '-._~%', "!$&'()*+,;=:@", "http://m-._~%nchen.com/m-._~%chen/!$&'()*+,;=:@")
 ])
-def test_recode_encoding(charname, chars, pathchars, expected_url):
+
+
+@examples
+def test_recode_unicode(charname, chars, pathchars, expected_url):
+    del charname  # passed, but unused
+    url_template = "http://m{chars}nchen.com/m{chars}chen/{pathchars}"
+    unicode_url = url_template.decode('ascii').format(chars=chars, pathchars=pathchars)
+    assert E.recode_uri(unicode_url) == expected_url
+
+
+@examples
+@pytest.mark.parametrize('encoding', ('latin1', 'windows-1252', 'utf8', 'ascii'))
+def test_recode_encoded(charname, chars, pathchars, expected_url, encoding):
     url_template = "http://m{chars}nchen.com/m{chars}chen/{pathchars}"
     unicode_url = url_template.decode('ascii').format(chars=chars, pathchars=pathchars)
 
-    assert E.recode_uri(unicode_url) == expected_url
+    try:
+        encoded_url = unicode_url.encode(encoding)
+    except UnicodeEncodeError:
+        pytest.skip("Some of these things just won't go.")
 
-    for encoding in ('latin1', 'windows-1252', 'utf8', 'ascii'):
-        try:
-            encoded_url = unicode_url.encode(encoding)
-        except UnicodeEncodeError:
-            # Some of these things just won't go.
-            continue
+    assert E.recode_uri(encoded_url) == expected_url
 
-        assert E.recode_uri(encoded_url) == expected_url
-
-        quoted_url = url_template.format(
-            chars=quote(chars.encode(encoding)),
-            pathchars=quote(pathchars.encode(encoding)),
-        )
-        if charname == 'ascii':
-            # ASCII is a special case when it comes to quoting: their quoted-ness should go untouched.
-            assert E.recode_uri(quoted_url) == quoted_url
-        else:
-            assert E.recode_uri(quoted_url) == expected_url
+    quoted_url = url_template.format(
+        chars=quote(chars.encode(encoding)),
+        pathchars=quote(pathchars.encode(encoding)),
+    )
+    if charname == 'ascii':
+        # ASCII is a special case when it comes to quoting: their quoted-ness should go untouched.
+        assert E.recode_uri(quoted_url) == quoted_url
+    else:
+        assert E.recode_uri(quoted_url) == expected_url
 
 
 class TestUnquoteBytes(object):
