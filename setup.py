@@ -17,7 +17,4 @@ setup(
         'yelp_encodings',
         'yelp_bytes'
     ],
-    dependency_links=[
-        'https://github.com/Yelp/yelp_bytes/tarball/master#egg=yelp_bytes-0.1.0'
-    ]
 )
