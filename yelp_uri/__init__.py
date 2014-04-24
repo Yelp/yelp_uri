@@ -24,7 +24,7 @@ class MalformedUrlError(UnicodeError):
     pass
 
 
-class RFC3986(object):
+class RFC3986(object):  # pylint:disable=too-many-instance-attributes
     """
     Codify some knowlege about the characters in a URL
     From:
@@ -39,7 +39,7 @@ class RFC3986(object):
         self.digits = DIGITS
         self.letters = LETTERS
         self.alphanum = DIGITS + LETTERS
-        self.whitespace = re.search('\s+', PRINTABLE).group()
+        self.whitespace = re.search(r'\s+', PRINTABLE).group()
 
         # From http://tools.ietf.org/html/rfc3986#appendix-A
         # In reverse order:
@@ -61,10 +61,10 @@ class RFC3986(object):
         # The set of allowable URL characters.
         self.url = self.unreserved + self.reserved
 
-        self.produce_character_classes()
+        self.re = self.produce_character_classes()  # pylint:disable=invalid-name
 
     def produce_character_classes(self):
-        class RFC3986_re:
+        class RFC3986re(object):
             pass
 
         for attr, val in vars(self).items():
@@ -75,21 +75,21 @@ class RFC3986(object):
             re_val = re.sub('[^' + re_val + ']', '', PRINTABLE)
             re_val = self.norm_re_class(re_val)
             # print '%20s : %s' % (attr, re_val)
-            setattr(RFC3986_re, attr, re_val)
+            setattr(RFC3986re, attr, re_val)
 
             neg_attr = 'not_' + attr
             neg_val = re.sub('[' + re_val + ']', '', PRINTABLE)
             neg_val = self.norm_re_class(neg_val)
             # print '%20s : %s' % (neg_attr, neg_val)
-            setattr(RFC3986_re, neg_attr, neg_val)
+            setattr(RFC3986re, neg_attr, neg_val)
 
-        self.re = RFC3986_re
+        return RFC3986re
 
     def norm_re_class(self, re_class):
         re_class = re_class.replace(self.whitespace, 'space')
         if '_' in re_class and self.alphanum in re_class:
-            re_class = re_class.replace(self.alphanum, 'word').replace('\_', '')
-        return re.escape(re_class).replace('space', '\s').replace('word', '\w')
+            re_class = re_class.replace(self.alphanum, 'word').replace(r'\_', '')
+        return re.escape(re_class).replace('space', r'\s').replace('word', r'\w')
 
 # This is a singleton class
 RFC3986 = RFC3986()
@@ -176,6 +176,10 @@ class SplitResult(namedtuple('SplitResult', 'scheme username password hostname p
     @property
     def netloc(self):
         return NetlocSplitResult(self.username, self.password, self.hostname, self.port)
+
+    def replace(self, **kwargs):
+        """_replace has been promoted to a public method"""
+        return self._replace(**kwargs)
 
 
 # List the names that this module "really" exports.

@@ -136,18 +136,18 @@ def recode_split_email(email):
 # Helper functions, not for export. #
 
 
-def _encode(s, encoding='UTF-8', expected='', quoted=True):
-    if s is None:
-        return s
-    s = from_bytes(s)
+def _encode(string, encoding='UTF-8', expected='', quoted=True):
+    if string is None:
+        return string
+    string = from_bytes(string)
 
     if encoding:
-        s = s.encode(encoding)
+        string = string.encode(encoding)
         if quoted:
-            s = quote(s, expected)
-        s = s.decode('ASCII')
+            string = quote(string, expected)
+        string = string.decode('ASCII')
 
-    return s
+    return string
 
 
 def _encode_hostname(hostname):
@@ -182,21 +182,21 @@ def _decode_hostname(hostname):
         return hostname.decode('internet')
 
 
-def _decode(s, encoding='internet'):
-    if s is None:
-        return s
-    s = to_bytes(s)
-    s = _unquote_bytes(s)
-    s = s.decode(encoding)
-    return s
+def _decode(string, encoding='internet'):
+    if string is None:
+        return string
+    string = to_bytes(string)
+    string = _unquote_bytes(string)
+    string = string.decode(encoding)
+    return string
 
 
-def _unquote_bytes(s):
+def _unquote_bytes(string):
     """Similar to urllib.unquote, but only quote non-ASCII bytes (0x80-0xFF).
     This is only for use by _decode(), above.
     """
 
-    res = s.split('%')
+    res = string.split('%')
     for i in xrange(1, len(res)):
         item = res[i]
         try:
@@ -211,7 +211,7 @@ def _unquote_bytes(s):
     return "".join(res)
 
 
-_extra_dots_RE = re.compile('\.\.+')
+_extra_dots_RE = re.compile(r'\.\.+')
 
 
 def _is_punycoded(domain):
@@ -236,7 +236,7 @@ def _emailsplit(email):
         username, sep, hostname = email.path.rpartition('@')
         if not sep:
             username = None
-        return email._replace(username=username, hostname=hostname, path='')
+        return email.replace(username=username, hostname=hostname, path='')
     else:
         return email
 
@@ -245,5 +245,5 @@ def _emailunsplit(split_email):
     """Given a result from _emailsplit, return an email string."""
     # I know. Gross. I don't see a better way.
     email_path = '@'.join(s for s in (split_email.username, split_email.hostname) if s is not None)
-    split_email = split_email._replace(username=None, hostname=None, path=email_path)
+    split_email = split_email.replace(username=None, hostname=None, path=email_path)
     return urlunsplit(split_email)
