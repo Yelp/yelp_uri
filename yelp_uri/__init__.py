@@ -68,9 +68,6 @@ class RFC3986(object):  # pylint:disable=too-many-instance-attributes
             pass
 
         for attr, val in vars(self).items():
-            if attr.startswith('_'):
-                continue
-
             re_val = re.escape(val)
             re_val = re.sub('[^' + re_val + ']', '', PRINTABLE)
             re_val = self.norm_re_class(re_val)
