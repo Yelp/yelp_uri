@@ -36,7 +36,7 @@ Make a user-readable url, from either a well-encoded url or user input:
 
 
 
-`yelp\_uri.search` has regexes for finding URLs in user-generated plaintext.
+`yelp_uri.search` has regexes for finding URLs in user-generated plaintext.
 
 ```python
     >>> plaintext = '''
