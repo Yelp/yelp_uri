@@ -1,6 +1,6 @@
 language: python
 env: # These should match the tox env list
-    - TOXENV=py26
+    - TOXENV=py26 PATH=/opt/python/2.6.9/bin:$PATH
     - TOXENV=py27
 install: pip install tox --use-mirrors
 script: tox

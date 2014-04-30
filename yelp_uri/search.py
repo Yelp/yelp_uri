@@ -22,7 +22,8 @@ domains = r"com|ca|net|org|edu|gov|biz|info|mobi|name|us|uk|fr|au|be|ch|de|es|eu
 # that contain parenthesis, such as wikipedia urls (e.g. 'http://en.wikipedia.org/wiki/Ham_(disambiguation)')
 # linkify_url has also been changed to look for urls ending in a ")" that do not have a matching "(", and moves
 # it outside of the closing link tag if found.
-url_regex = re.compile(r"""
+url_regex = re.compile(
+    r"""
         # Don't start in the middle of something.
         (?<!  [\w.@/:-] )
         (?!  mailto: )
@@ -75,15 +76,16 @@ url_regex = re.compile(r"""
             $
         )
     """ % dict(
-    vars(RFC3986.re),
-    domains=domains,
-),
-    re.VERBOSE | re.UNICODE | re.IGNORECASE
+        vars(RFC3986.re),
+        domains=domains,
+    ),
+    re.VERBOSE | re.UNICODE | re.IGNORECASE,
 )
 
 
 # A regex for finding email addresses in free-form text.
-email_regex = re.compile(r"""
+email_regex = re.compile(
+    r"""
         (?: # Don't start in the middle of something.
             (?<!  [\w.@/:-] )
             |

@@ -34,7 +34,7 @@ parse_qsl_test_cases = [
 ]
 
 
-class UrlParseTestCase(unittest.TestCase):
+class UrlParseTestCase(unittest.TestCase):  # pylint:disable=too-many-public-methods
     def checkRoundtrips(self, url, parsed, split):
         result = urlparse.urlparse(url)
         self.assertEqual(result, parsed)
@@ -331,16 +331,16 @@ class UrlParseTestCase(unittest.TestCase):
 
     def test_urldefrag(self):
         for url, defrag, frag in [
-            ('http://python.org#frag', 'http://python.org', 'frag'),
-            ('http://python.org', 'http://python.org', ''),
-            ('http://python.org/#frag', 'http://python.org/', 'frag'),
-            ('http://python.org/', 'http://python.org/', ''),
-            ('http://python.org/?q#frag', 'http://python.org/?q', 'frag'),
-            ('http://python.org/?q', 'http://python.org/?q', ''),
-            ('http://python.org/p#frag', 'http://python.org/p', 'frag'),
-            ('http://python.org/p?q', 'http://python.org/p?q', ''),
-            (RFC1808_BASE, 'http://a/b/c/d;p?q', 'f'),
-            (RFC2396_BASE, 'http://a/b/c/d;p?q', ''),
+                ('http://python.org#frag', 'http://python.org', 'frag'),
+                ('http://python.org', 'http://python.org', ''),
+                ('http://python.org/#frag', 'http://python.org/', 'frag'),
+                ('http://python.org/', 'http://python.org/', ''),
+                ('http://python.org/?q#frag', 'http://python.org/?q', 'frag'),
+                ('http://python.org/?q', 'http://python.org/?q', ''),
+                ('http://python.org/p#frag', 'http://python.org/p', 'frag'),
+                ('http://python.org/p?q', 'http://python.org/p?q', ''),
+                (RFC1808_BASE, 'http://a/b/c/d;p?q', 'f'),
+                (RFC2396_BASE, 'http://a/b/c/d;p?q', ''),
         ]:
             self.assertEqual(urlparse.urldefrag(url), (defrag, frag))
 

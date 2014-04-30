@@ -33,6 +33,9 @@ parsing quirks from older RFCs are retained. The testcases in
 test_urlparse.py provides a good indicator of parsing behavior.
 
 """
+# This is a stdlib file. To ease merging, we won't fix these style issues.
+# pylint:disable=too-many-branches,too-many-return-statements,unused-variable
+# pylint:disable=too-many-locals,fixme,invalid-name,attribute-defined-outside-init
 
 __all__ = ["urlparse", "urlunparse", "urljoin", "urldefrag",
            "urlsplit", "urlunsplit", "parse_qs", "parse_qsl"]

@@ -25,9 +25,9 @@ import urlparse
 from yelp_bytes import from_utf8, to_utf8
 
 
-def _pairs(x):
-    """If x is a dict, call x.iteritems(), else just return x"""
-    return x.iteritems() if isinstance(x, dict) else x
+def _pairs(obj):
+    """If obj is a dict, call obj.iteritems(), else just return obj"""
+    return obj.iteritems() if isinstance(obj, dict) else obj
 
 
 def urlencode(query, *args, **kwargs):
@@ -39,38 +39,36 @@ def urlencode(query, *args, **kwargs):
 def quote(string, *args, **kwargs):
     """A wrapper for urllib.quote() that UTF-8 encodes string if
     query is unicode. Always returns a str."""
-    """Call urllib.quote(), encoding string in UTF-8 if it's unicode."""
     return urllib.quote(to_utf8(string), *args, **kwargs)
 
 
 def quote_plus(string, *args, **kwargs):
     """A wrapper for urllib.quote_plus() that UTF-8 encodes string if
     query is unicode. Always returns a str."""
-    """Call urllib.quote_plus(), encoding string in UTF-8 if it's unicode."""
     assert isinstance(string, basestring), type(string)
     return urllib.quote_plus(to_utf8(string), *args, **kwargs)
 
 
-def unquote(s, errors='ignore'):
+def unquote(string, errors='ignore'):
     """A wrapper for urllib.unquote() that UTF-8 decodes strs.
     Should always return a unicode.
 
     errors - What to do on a decoding error? Default behavior is
     to ignore bytes that we can't decode."""
-    return from_utf8(urllib.unquote(to_utf8(s)), errors=errors)
+    return from_utf8(urllib.unquote(to_utf8(string)), errors=errors)
 
 
-def unquote_plus(s, errors='ignore'):
+def unquote_plus(string, errors='ignore'):
     """A wrapper for urllib.unquote_plus() that UTF-8 decodes strs.
     Should always return a unicode.
 
     errors - What to do on a decoding error? Default behavior is
     to ignore bytes that we can't decode."""
-    return from_utf8(urllib.unquote_plus(to_utf8(s)), errors=errors)
+    return from_utf8(urllib.unquote_plus(to_utf8(string)), errors=errors)
 
 
-def splitvalue(s):
-    return urllib.splitvalue(to_utf8(s))
+def splitvalue(string):
+    return urllib.splitvalue(to_utf8(string))
 
 
 def parse_qs(query_string, errors='ignore'):
