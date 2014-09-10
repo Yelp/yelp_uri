@@ -105,5 +105,4 @@ def test_url_regex():
     assert_finds_url('LOANFINDERFAST.us.', 'LOANFINDERFAST.us')
     assert_finds_url('LOANFINDERFAST.us-', 'LOANFINDERFAST.us')
 
-    # Ticket: INTL-36.
     assert_finds_whole_url('http://Cervejoteca.com.br')
