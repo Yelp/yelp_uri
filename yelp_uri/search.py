@@ -4,7 +4,7 @@ import re
 from yelp_uri import RFC3986
 
 
-domains = r"com|ca|net|org|edu|gov|biz|info|mobi|name|us|uk|fr|au|be|ch|de|es|eu|it|tv|cn|jp"
+domains = r"com|ca|net|org|edu|gov|biz|info|mobi|name|us|uk|fr|au|be|ch|de|es|eu|it|tv|cn|jp|ar|cl|br"
 
 # A regex for finding urls in free-form text.
 # This regex is space-indented, so that it looks OK on ReviewBoard
