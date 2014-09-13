@@ -10,8 +10,8 @@ def create_regex(url='http://data.iana.org/TLD/tlds-alpha-by-domain.txt'):
 	try:
 		domains_data = urllib2.urlopen(url)
 	except URLError as e:
-		print "Could not get the domains from the given URL. Perhaps the IANA \
-			   has changed the location of the file or it no longer exists."
+		print "Could not get the domains from the given URL. Perhaps the IANA" \
+			   "has changed the location of the file or it no longer exists."
 		return e.reason
 
 	domains = []
