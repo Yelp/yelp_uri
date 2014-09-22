@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 """
 This reads the IANA-maintained list of tlds and formats/outputs them for use
-in the domains regular expression. All you have to do is replace the
-existing "domains = ..." line in search.py with this script's output.
+in the domains regular expression. To regenerate: 
+    ./tools/generate-tlds > yelp_uri/tlds.py
 """
 from __future__ import unicode_literals
 from __future__ import print_function
 import sys
 import urllib2
+
+
+# The maximum number of characters allowed in a single line.
+MAX_LINE_LENGTH = 131
 
 
 def main(url='http://data.iana.org/TLD/tlds-alpha-by-domain.txt'):
@@ -34,17 +38,18 @@ def main(url='http://data.iana.org/TLD/tlds-alpha-by-domain.txt'):
         tlds.add(datum.decode('utf-8'))
         tlds.add(datum.decode('idna'))
 
+    newline_delimiter = "'\n    '"
     tlds = iter(sorted(tlds))
     lines = [next(tlds)]
     for tld in tlds:
         lines[-1] += '|'
-        linelen = len(lines[-1]) + len(tld) + 6
-        if linelen < 131:
+        linelen = len(lines[-1]) + len(tld) + len(newline_delimiter)
+        if linelen < MAX_LINE_LENGTH:
             lines[-1] += tld
         else:
             lines.append(tld)
 
-    domains_string = "'\n    '".join(lines)
+    domains_string = newline_delimiter.join(lines)
 
     print('''\
 # -*- coding: utf-8 -*-
