@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+"""
+This reads the IANA-maintained list of tlds and formats/outputs them for use
+in the domains regular expression. All you have to do is replace the
+existing "domains = ..." line in search.py with this script's output.
+"""
+from __future__ import unicode_literals
+from __future__ import print_function
+import sys
+import urllib2
+
+
+def main(url='http://data.iana.org/TLD/tlds-alpha-by-domain.txt'):
+    try:
+        domain_data = urllib2.urlopen(url)
+    except urllib2.URLError as e:
+        print(
+            "Could not get the domains from the given URL. Perhaps the IANA"
+            "has changed the location of the file or it no longer exists."
+        )
+        return e.reason
+
+    # Convert all newlines except the last one to '|', so 'foo\nbar\n' -> 'foo|bar'.
+    # Ignores all lines starting with '#', which is a comment in the text file.
+    data = (
+        line.lower()
+        for line in domain_data.read().splitlines()
+        if not line.startswith("#") and line.strip()
+    )
+
+    tlds = set()
+    for datum in data:
+        # get both the punycoded and unicoded versions:
+        tlds.add(datum.decode('utf-8'))
+        tlds.add(datum.decode('idna'))
+
+    tlds = iter(sorted(tlds))
+    lines = [next(tlds)]
+    for tld in tlds:
+        lines[-1] += '|'
+        linelen = len(lines[-1]) + len(tld) + 6
+        if linelen < 131:
+            lines[-1] += tld
+        else:
+            lines.append(tld)
+
+    domains_string = "'\n    '".join(lines)
+
+    print('''\
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+# Generated automatically. To regenerate:
+#    ./tools/generate-tlds  > yelp_uri/tlds.py
+tlds = (
+    '{0}'
+)'''.format(domains_string).encode('UTF-8'))
+
+
+if __name__ == "__main__":
+    sys.exit(main())
