@@ -2,9 +2,7 @@
 import re
 
 from yelp_uri import RFC3986
-
-
-domains = r"com|ca|net|org|edu|gov|biz|info|mobi|name|us|uk|fr|au|be|ch|de|es|eu|it|tv|cn|jp|ar|cl|br"
+from .tlds import tlds
 
 # A regex for finding urls in free-form text.
 # This regex is space-indented, so that it looks OK on ReviewBoard
@@ -47,7 +45,7 @@ url_regex = re.compile(
             (   # one or more domain segments
                 [^%(not_regname)s.]+\.
             )+
-            (%(domains)s)
+            (%(tlds)s)
             (:\d+)? # maybe a port?
         )
         # An optional path/query/fragment component
@@ -77,7 +75,7 @@ url_regex = re.compile(
         )
     """ % dict(
         vars(RFC3986.re),
-        domains=domains,
+        tlds=tlds,
     ),
     re.VERBOSE | re.UNICODE | re.IGNORECASE,
 )

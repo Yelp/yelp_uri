@@ -106,3 +106,21 @@ def test_url_regex():
     assert_finds_url('LOANFINDERFAST.us-', 'LOANFINDERFAST.us')
 
     assert_finds_whole_url('http://Cervejoteca.com.br')
+
+    # We now know the list of non-ascii top-level domains as well:
+    assert_finds_url(
+        u'This is a website: 中国互联网络信息中心.中国. No, really.',
+        u'中国互联网络信息中心.中国'
+    )
+    # We can't find internationalized TLDs in encoded strings, however.
+    assert_no_url(b'This is a website: 中国互联网络信息中心.中国. No, really.')
+
+    # But we should be able to find the punycoded TLDs in both cases:
+    assert_finds_url(
+        u'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.',
+        u'中国互联网络信息中心.xn--fiqs8s'
+    )
+    assert_finds_url(
+        b'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.',
+        b'中国互联网络信息中心.xn--fiqs8s'
+    )
