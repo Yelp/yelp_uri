@@ -10,10 +10,6 @@ import sys
 import urllib2
 
 
-# The maximum number of characters allowed in a single line.
-MAX_LINE_LENGTH = 131
-
-
 def main(url='http://data.iana.org/TLD/tlds-alpha-by-domain.txt'):
     try:
         domain_data = urllib2.urlopen(url)
@@ -38,27 +34,16 @@ def main(url='http://data.iana.org/TLD/tlds-alpha-by-domain.txt'):
         tlds.add(datum.decode('utf-8'))
         tlds.add(datum.decode('idna'))
 
-    newline_delimiter = "'\n    '"
-    tlds = iter(sorted(tlds))
-    lines = [next(tlds)]
-    for tld in tlds:
-        lines[-1] += '|'
-        linelen = len(lines[-1]) + len(tld) + len(newline_delimiter)
-        if linelen < MAX_LINE_LENGTH:
-            lines[-1] += tld
-        else:
-            lines.append(tld)
-
-    domains_string = newline_delimiter.join(lines)
+    domains_string = "',\n    '".join(sorted(tlds))
 
     print('''\
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 # Generated automatically. To regenerate:
 #    ./tools/generate-tlds  > yelp_uri/tlds.py
-tlds = (
-    '{0}'
-)'''.format(domains_string).encode('UTF-8'))
+tlds = '|'.join((
+    '{0}',
+))'''.format(domains_string).encode('UTF-8'))
 
 
 if __name__ == "__main__":
