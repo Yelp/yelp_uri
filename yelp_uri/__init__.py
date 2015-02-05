@@ -47,7 +47,8 @@ class RFC3986(object):  # pylint:disable=too-many-instance-attributes
         self.gendelims = ':/?#@'
         self.reserved = self.subdelims + self.gendelims
         # Combined: Wherever unreserved is used, percent-encoded is as well.
-        self.unreserved = self.alphanum + '-._~' + '%'
+        self.plaintext = self.alphanum + '-_'
+        self.unreserved = self.plaintext + '.~%'
         self.pchar = self.unreserved + self.subdelims + ':@'
         self.query = self.pchar + '/?'
         self.fragment = self.pchar + '/?'
