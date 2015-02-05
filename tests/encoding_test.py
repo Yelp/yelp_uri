@@ -69,6 +69,13 @@ def test_utf8_url():
         'http://yelp.com/m%C3%BCnchen/m%C3%BCnchen?m%C3%BCnchen=m%C3%BCnchen&htmlchars=%3C%22%3E'
 
 
+def test_letters_recoding():
+    """Tests that alphanumeric escapes get unquoted in recode_uri."""
+    url = u'http://💩.la/%74%68%69%73%5f%69%73%5f%61%5f%70%61%74%68?a=b%3f%63&%64%3D%65=f#%73%70%61%63%65%73 %61%72%65 %64%61%6e%67%65%72%6f%75%73'
+    assert E.recode_uri(url) == \
+        'http://xn--ls8h.la/this_is_a_path?a=b%3fc&d%3De=f#spaces%20are%20dangerous'
+
+
 def test_multiple_escapes():
     url = u'http://münch.com?zero=münch&one=m%C3%BCnch&two=m%25C3%25BCnch&three=m%2525C3%2525BCnch'
     assert E.recode_uri(url) == \
