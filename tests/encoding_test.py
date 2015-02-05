@@ -112,6 +112,13 @@ def test_param_xss():
     assert E.recode_uri('/foo;<script>;baz/barney;%2F%3B%25;wilma') == '/foo;%3Cscript%3E;baz/barney;%2F%3B%25;wilma'
 
 
+def test_letters_recoding():
+    """Tests that alphanumeric escapes get unquoted in recode_uri."""
+    url = u'http://💩.la/%74%68%69%73%5f%69%73%5f%61%5f%70%61%74%68?a=b%3f%63&%64%3D%65=f#%73%70%61%63%65%73 %61%72%65 %64%61%6e%67%65%72%6f%75%73'
+    assert E.recode_uri(url) == \
+        'http://xn--ls8h.la/this_is_a_path?a=b%3fc&d%3De=f#spaces%20are%20dangerous'
+
+
 def worst_case(strange_character):
     u"""
     generate a worst-case url, using a "strange" character
