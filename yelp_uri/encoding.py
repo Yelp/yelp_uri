@@ -192,7 +192,7 @@ def _decode(string, encoding='internet'):
 
 
 def _unquote_bytes(string):
-    """Similar to urllib.unquote, but only quote non-ASCII bytes (0x80-0xFF).
+    """Similar to urllib.unquote, but only unquote ASCII-plaintext and non-ASCII bytes (0x80-0xFF).
     This is only for use by _decode(), above.
     """
 
@@ -204,8 +204,12 @@ def _unquote_bytes(string):
         except ValueError:
             res[i] = '%' + item
         else:
-            if c >= 0x80:
-                res[i] = chr(c) + item[2:]
+            char = chr(c)
+            if (
+                    c >= 0x80 or
+                    char in RFC3986.plaintext
+            ):
+                res[i] = char + item[2:]
             else:
                 res[i] = '%' + item
     return "".join(res)
