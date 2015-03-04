@@ -33,6 +33,9 @@ parsing quirks from older RFCs are retained. The testcases in
 test_urlparse.py provides a good indicator of parsing behavior.
 
 """
+from collections import namedtuple
+
+
 # This is a stdlib file. To ease merging, we won't fix these style issues.
 # pylint:disable=too-many-branches,too-many-return-statements,unused-variable
 # pylint:disable=too-many-locals,fixme,invalid-name,attribute-defined-outside-init
@@ -103,9 +106,6 @@ class ResultMixin(object):
             port = netloc.split(":", 1)[1]
             return int(port, 10)
         return None
-
-
-from collections import namedtuple
 
 
 class SplitResult(namedtuple('SplitResult', 'scheme netloc path query fragment'), ResultMixin):

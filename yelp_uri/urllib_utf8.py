@@ -30,10 +30,16 @@ def _pairs(obj):
     return obj.iteritems() if isinstance(obj, dict) else obj
 
 
-def urlencode(query, *args, **kwargs):
+def urlencode(query, doseq=0):
     """A wrapper for urllib.urlencode() that UTF-8 encodes query if
     query is unicode. Always returns a str."""
-    return urllib.urlencode([(to_utf8(k), to_utf8(v)) for (k, v) in _pairs(query)], *args, **kwargs)
+    def encode_pair(key, val):
+        if doseq and isinstance(val, (list, tuple)):
+            return to_utf8(key), [to_utf8(item) for item in val]
+
+        return to_utf8(key), to_utf8(val)
+
+    return urllib.urlencode([encode_pair(k, v) for (k, v) in _pairs(query)], doseq=doseq)
 
 
 def quote(string, *args, **kwargs):

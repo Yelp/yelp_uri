@@ -1,7 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-_suites = ['unicode']
-
 import urllib
 import urlparse
 
@@ -36,6 +34,19 @@ def test_urlencode():
     # try again, but with arrays of pairs
     assert_params_equal(urllib_utf8.urlencode(query.items()),
                         urllib.urlencode(utf8_query))
+
+
+def test_urlencode_lists():
+    query = {'exprs': ['foo:123', u'bär:222😁']}
+    encoded_query = {'exprs': ['foo:123', 'b\xc3\xa4r:222\xf0\x9f\x98\x81']}
+    expected = urllib.urlencode(encoded_query, True)
+    assert urllib_utf8.urlencode(query, True) == expected
+
+
+def test_urlencode_lists_no_doseq():
+    query = {'exprs': ['foo:123', u'bär:222😁']}
+    encoded_query = {'exprs': repr(['foo:123', u'bär:222😁'])}
+    assert urllib_utf8.urlencode(query) == urllib.urlencode(encoded_query)
 
 
 def test_quote_and_quote_plus():
