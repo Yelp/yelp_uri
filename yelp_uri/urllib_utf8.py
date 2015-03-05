@@ -26,18 +26,19 @@ from yelp_bytes import from_utf8, to_utf8
 
 
 def _pairs(obj):
-    """If obj is a dict, call obj.iteritems(), else just return obj"""
-    return obj.iteritems() if isinstance(obj, dict) else obj
+    """If obj is a dict, call obj.items(), else just return obj"""
+    return obj.items() if isinstance(obj, dict) else obj
 
 
 def urlencode(query, doseq=0):
     """A wrapper for urllib.urlencode() that UTF-8 encodes query if
     query is unicode. Always returns a str."""
+    # see: https://github.com/python/cpython/blob/2.7/Lib/urllib.py#L1340
     def encode_pair(key, val):
         if doseq and isinstance(val, (list, tuple)):
             return to_utf8(key), [to_utf8(item) for item in val]
-
-        return to_utf8(key), to_utf8(val)
+        else:
+            return to_utf8(key), to_utf8(val)
 
     return urllib.urlencode([encode_pair(k, v) for (k, v) in _pairs(query)], doseq=doseq)
 
@@ -86,6 +87,6 @@ def parse_qs(query_string, errors='ignore'):
             key,
             [from_utf8(value, errors=errors) for value in value_list],
         )
-        for key, value_list in kwargs_bytes.iteritems()
+        for key, value_list in kwargs_bytes.items()
     ))
     return kwargs

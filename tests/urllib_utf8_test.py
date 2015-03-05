@@ -37,20 +37,17 @@ def test_urlencode():
 
 
 def test_urlencode_lists():
-    query = {'exprs': ['foo:123', u'bär:222😁']}
-    encoded_query = {'exprs': ['foo:123', 'b\xc3\xa4r:222\xf0\x9f\x98\x81']}
-    expected = urllib.urlencode(encoded_query, True)
+    expected = 'exprs=foo%3A123&exprs=b%C3%A4r%3A222%F0%9F%90%B5'
+
+    query = {'exprs': ['foo:123', u'bär:222🐵'.encode('UTF-8')]}
+    assert urllib.urlencode(query, True) == expected
+    assert urllib_utf8.urlencode(query, True) == expected
+
+    query = {'exprs': ['foo:123', u'bär:222🐵']}
     assert urllib_utf8.urlencode(query, True) == expected
 
 
-def test_urlencode_lists_no_doseq():
-    query = {'exprs': ['foo:123', u'bär:222😁']}
-    encoded_query = {'exprs': repr(['foo:123', u'bär:222😁'])}
-    assert urllib_utf8.urlencode(query) == urllib.urlencode(encoded_query)
-
-
 def test_quote_and_quote_plus():
-
     strings = ['', 'Hello there!', u'naïve', u' San José ', ' cafés']
     for string in strings:
         utf8_string = string.encode('utf-8') if isinstance(string, unicode) else string
