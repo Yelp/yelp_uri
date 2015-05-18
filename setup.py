@@ -18,6 +18,7 @@ def main():
         ],
         packages=find_packages('.', exclude=('tests*',)),
         install_requires=[
+            'six',
             'yelp_encodings',
             'yelp_bytes'
         ],

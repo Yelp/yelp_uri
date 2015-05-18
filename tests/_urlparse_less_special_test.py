@@ -8,6 +8,8 @@ http://hg.python.org/cpython/raw-file/4a17784f2fee/Lib/test/test_urlparse.py
 
 import unittest
 
+import six
+
 import yelp_uri._urlparse_less_special as urlparse
 
 
@@ -31,6 +33,19 @@ parse_qsl_test_cases = [
     ("&a=b", [('a', 'b')]),
     ("a=a+b&b=b+c", [('a', 'a b'), ('b', 'b c')]),
     ("a=1&a=2", [('a', '1'), ('a', '2')]),
+]
+
+parse_qs_test_cases = [
+    ("", {}),
+    ("&", {}),
+    ("&&", {}),
+    ("=", {'': ['']}),
+    ("=a", {'': ['a']}),
+    ("a", {'a': ['']}),
+    ("a=", {'a': ['']}),
+    ("&a=b", {'a': ['b']}),
+    ("a=a+b&b=b+c", {'a': ['a b'], 'b': ['b c']}),
+    ("a=1&a=2", {'a': ['1', '2']}),
 ]
 
 
@@ -89,6 +104,11 @@ class UrlParseTestCase(unittest.TestCase):  # pylint:disable=too-many-public-met
     def test_qsl(self):
         for orig, expect in parse_qsl_test_cases:
             result = urlparse.parse_qsl(orig, keep_blank_values=True)
+            self.assertEqual(result, expect, "Error parsing %s" % repr(orig))
+
+    def test_qs(self):
+        for orig, expect in parse_qs_test_cases:
+            result = urlparse.parse_qs(orig, keep_blank_values=True)
             self.assertEqual(result, expect, "Error parsing %s" % repr(orig))
 
     def test_roundtrips(self):
@@ -426,7 +446,7 @@ class UrlParseTestCase(unittest.TestCase):  # pylint:disable=too-many-public-met
     def test_caching(self):
         # Test case for bug #1313119
         uri = "http://example.com/doc/"
-        unicode_uri = unicode(uri)
+        unicode_uri = six.text_type(uri)
 
         urlparse.urlparse(unicode_uri)
         p = urlparse.urlparse(uri)
