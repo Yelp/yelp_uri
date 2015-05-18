@@ -5,16 +5,22 @@ This is complicated since a uri consists of several parts with non-uniform encod
 In general, hostnames should be punycode, usernames should be utf8, and everything else should be urlquote+utf8.
 """
 import re
-from urllib import quote
 
-from yelp_uri import urlsplit, urlunsplit, RFC3986, MalformedUrlError, SplitResult
+import six
+from six.moves.urllib.parse import quote  # pylint: disable=import-error, no-name-in-module
+
+from yelp_uri import urlsplit
+from yelp_uri import urlunsplit
+from yelp_uri import RFC3986
+from yelp_uri import MalformedUrlError
+from yelp_uri import SplitResult
 from yelp_bytes import from_bytes
 from yelp_bytes import to_bytes
 
 
 def encode_uri(uri):
     """Given a (presumed decoded) uri, return a well-encoded uri suitable for an html href."""
-    uri = urlsplit(uri)
+    uri = urlsplit(from_bytes(uri))
 
     new_uri = encode_split_uri(uri)
 
@@ -37,7 +43,7 @@ def encode_split_uri(uri):
 
 def decode_uri(uri):
     """Given a uri, return a decoded uri suitable for displaying to users."""
-    uri = urlsplit(uri)
+    uri = urlsplit(from_bytes(uri))
 
     new_uri = decode_split_uri(uri)
 
@@ -62,7 +68,7 @@ def recode_uri(uri):
     """Take an unknown uri and return a well-encoded uri suitable for an html href.
     This is essentially equivalent to encode(decode(uri)), but a little more efficient.
     """
-    uri = urlsplit(uri)
+    uri = urlsplit(from_bytes(uri))
 
     new_uri = recode_split_uri(uri)
 
@@ -84,6 +90,7 @@ def encode_email(email):
 
 def encode_split_email(email):
     """email -- a yelp.uri.SplitResult object"""
+
     return SplitResult(
         _encode(email.scheme),  # Could be "mailto"
         # We can't percent-quote email usernames because of the postfix "percent hack"
@@ -99,7 +106,7 @@ def encode_split_email(email):
 
 
 def decode_email(email):
-    email = _emailsplit(email)
+    email = _emailsplit(from_bytes(email))
 
     new_email = decode_split_uri(email)
 
@@ -121,7 +128,7 @@ def decode_split_email(email):
 
 
 def recode_email(email):
-    email = _emailsplit(email)
+    email = _emailsplit(from_bytes(email))
 
     new_email = recode_split_email(email)
 
@@ -142,10 +149,11 @@ def _encode(string, encoding='UTF-8', expected='', quoted=True):
     string = from_bytes(string)
 
     if encoding:
-        string = string.encode(encoding)
+        string = string.encode(encoding)  # pylint: disable=maybe-no-member
         if quoted:
             string = quote(string, expected)
-        string = string.decode('ASCII')
+        else:
+            string = from_bytes(string.decode('ASCII'))
 
     return string
 
@@ -161,7 +169,7 @@ def _encode_hostname(hostname):
     try:
         # Because IDNA should always return ascii, there should be no percent-quotes in the hostnames after encoding.
         return _encode(hostname, encoding='IDNA', quoted=False)
-    except UnicodeError, error:
+    except UnicodeError as error:
         # Make this error a little more explicit and catch-able.
         if len(error.args) == 1 and type(error.args[0]) is str:
             raise MalformedUrlError('Invalid hostname: %s: %r' % (error.args[0], hostname))
@@ -196,23 +204,23 @@ def _unquote_bytes(string):
     This is only for use by _decode(), above.
     """
 
-    res = string.split('%')
-    for i in xrange(1, len(res)):
+    res = string.split(b'%')
+    for i in range(1, len(res)):
         item = res[i]
         try:
             c = int(item[:2], 16)
         except ValueError:
-            res[i] = '%' + item
+            res[i] = b'%' + item
         else:
-            char = chr(c)
+            char = six.unichr(c).encode('LATIN-1')
             if (
                     c >= 0x80 or
-                    char in RFC3986.plaintext
+                    char in RFC3986.plaintext.encode('LATIN-1')
             ):
                 res[i] = char + item[2:]
             else:
-                res[i] = '%' + item
-    return "".join(res)
+                res[i] = b'%' + item
+    return b''.join(res)
 
 
 _extra_dots_RE = re.compile(r'\.\.+')
@@ -224,7 +232,7 @@ def _is_punycoded(domain):
     """
     from encodings.idna import ace_prefix
 
-    return any(label.startswith(ace_prefix) for label in domain.split('.'))
+    return any(label.startswith(ace_prefix) for label in domain.split(b'.'))
 
 
 def _emailsplit(email):

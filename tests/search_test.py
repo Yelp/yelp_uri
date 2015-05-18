@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import six
+
 from yelp_uri.search import email_regex
 from yelp_uri.search import url_regex
 
@@ -21,7 +23,8 @@ def test_email_regex():
     assert_finds_email('Tom+Yelp@yahoo.com')
     assert_finds_email('info@te-aro.ca')
     assert_finds_email(u'Soirée@yelp.com')
-    assert_finds_email(u'Soirée@yelp.com'.encode('utf8'))
+    if not six.PY3:  # Regexes aren't valid for both bytes and str in py3
+        assert_finds_email(u'Soirée@yelp.com'.encode('utf8'))
     assert_finds_email('"Tom H" <Tom@yahoo.com>', 'Tom@yahoo.com')
     assert_finds_email('Email me at dave@yelp.com.', 'dave@yelp.com')
     assert_finds_email(
@@ -69,9 +72,9 @@ def test_url_regex():
     assert_finds_whole_url('www.audrey_tsang.com')
     assert_finds_whole_url('http://a.com')
     assert_finds_whole_url('http://who_even_uses_dot_mobi.mobi')
-    assert_finds_whole_url(u'http://www.yelp.com/münchen')
-    assert_finds_whole_url(u'http://www.ü.com/ü;ü;ü/ü;ü;ü?ü=ü&ü=ü#!ü/ü')
-    assert_finds_whole_url(u'http://➡.ws/➡;➡;➡/➡;➡;➡?➡=➡&➡=➡#!➡/➡')
+    assert_finds_whole_url('http://www.yelp.com/münchen')
+    assert_finds_whole_url('http://www.ü.com/ü;ü;ü/ü;ü;ü?ü=ü&ü=ü#!ü/ü')
+    assert_finds_whole_url('http://➡.ws/➡;➡;➡/➡;➡;➡?➡=➡&➡=➡#!➡/➡')
     assert_finds_whole_url('http://y.combinator')
     assert_finds_whole_url('http://.ocregion.com')
     # Ticket: #31242
@@ -113,14 +116,16 @@ def test_url_regex():
         u'中国互联网络信息中心.中国'
     )
     # We can't find internationalized TLDs in encoded strings, however.
-    assert_no_url(b'This is a website: 中国互联网络信息中心.中国. No, really.')
+    if not six.PY3:  # Regexes aren't valid for both bytes and str in py3
+        assert_no_url(u'This is a website: 中国互联网络信息中心.中国. No, really.'.encode('UTF-8'))
 
     # But we should be able to find the punycoded TLDs in both cases:
     assert_finds_url(
         u'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.',
         u'中国互联网络信息中心.xn--fiqs8s'
     )
-    assert_finds_url(
-        b'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.',
-        b'中国互联网络信息中心.xn--fiqs8s'
-    )
+    if not six.PY3:  # Regexes aren't valid for both bytes and str in py3
+        assert_finds_url(
+            u'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.'.encode('UTF-8'),
+            u'中国互联网络信息中心.xn--fiqs8s'.encode('UTF-8')
+        )

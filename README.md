@@ -15,11 +15,10 @@ TL;DR: `pip install yelp_uri`
 Make a well-encoded URI from user input.
 
 ```python
-    >>> weird_uri = b'http://münch.com/münch?one=m%C3%BCnch#m%FCnch'
-
+    >>> weird_uri = u'http://münch.com/münch?one=m%C3%BCnch#m%FCnch'.encode('UTF-8')
     >>> import yelp_uri.encoding as E
     >>> well_encoded = E.recode_uri(weird_uri)
-    >>> print well_encoded
+    >>> print(well_encoded)
     http://xn--mnch-0ra.com/m%C3%BCnch?one=m%C3%BCnch#m%C3%BCnch
 
 ```
@@ -27,9 +26,9 @@ Make a well-encoded URI from user input.
 Make a user-readable url, from either a well-encoded url or user input:
 
 ```python
-    >>> print E.decode_uri(well_encoded)
+    >>> print(E.decode_uri(well_encoded))
     http://münch.com/münch?one=münch#münch
-    >>> print E.decode_uri(weird_uri)
+    >>> print(E.decode_uri(weird_uri))
     http://münch.com/münch?one=münch#münch
 
 ```
@@ -44,7 +43,7 @@ Make a user-readable url, from either a well-encoded url or user input:
     ...     Follow @YelpCincy on Twitter (http://twitter.com/YelpCincy)
     ... '''
     >>> from yelp_uri.search import url_regex
-    >>> for url in url_regex.finditer(plaintext): print url.group()
+    >>> for url in url_regex.finditer(plaintext): print(url.group())
     http://en.wikipedia.org/wiki/Eon_(geology)
     http://twitter.com/YelpCincy
 
