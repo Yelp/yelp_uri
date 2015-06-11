@@ -35,6 +35,8 @@ test_urlparse.py provides a good indicator of parsing behavior.
 """
 from collections import namedtuple
 
+import six
+
 
 # This is a stdlib file. To ease merging, we won't fix these style issues.
 # pylint:disable=too-many-branches,too-many-return-statements,unused-variable
@@ -315,14 +317,14 @@ _hextochr = dict((a + b, chr(int(a + b, 16))) for a in _hexdig for b in _hexdig)
 def unquote(s):
     """unquote('abc%20def') -> 'abc def'."""
     res = s.split('%')
-    for i in xrange(1, len(res)):
+    for i in range(1, len(res)):
         item = res[i]
         try:
             res[i] = _hextochr[item[:2]] + item[2:]
         except KeyError:
             res[i] = '%' + item
         except UnicodeDecodeError:
-            res[i] = unichr(int(item[:2], 16)) + item[2:]
+            res[i] = six.unichr(int(item[:2], 16)) + item[2:]
     return "".join(res)
 
 

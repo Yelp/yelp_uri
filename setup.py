@@ -5,7 +5,7 @@ from setuptools import setup
 def main():
     setup(
         name='yelp_uri',
-        version='1.0.1-dev0',
+        version='1.0.2-dev0',
         description="Uri utilities maintained by Yelp",
         url='https://github.com/Yelp/yelp_uri',
         author='Buck Golemon',
@@ -18,6 +18,7 @@ def main():
         ],
         packages=find_packages('.', exclude=('tests*',)),
         install_requires=[
+            'six',
             'yelp_encodings',
             'yelp_bytes'
         ],

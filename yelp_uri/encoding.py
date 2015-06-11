@@ -5,7 +5,9 @@ This is complicated since a uri consists of several parts with non-uniform encod
 In general, hostnames should be punycode, usernames should be utf8, and everything else should be urlquote+utf8.
 """
 import re
-from urllib import quote
+
+import six
+quote = six.moves.urllib.parse.quote
 
 from yelp_uri import urlsplit, urlunsplit, RFC3986, MalformedUrlError, SplitResult
 from yelp_bytes import from_bytes
@@ -145,7 +147,8 @@ def _encode(string, encoding='UTF-8', expected='', quoted=True):
         string = string.encode(encoding)
         if quoted:
             string = quote(string, expected)
-        string = string.decode('ASCII')
+        else:
+            string = string.decode('ASCII')
 
     return string
 
@@ -161,9 +164,9 @@ def _encode_hostname(hostname):
     try:
         # Because IDNA should always return ascii, there should be no percent-quotes in the hostnames after encoding.
         return _encode(hostname, encoding='IDNA', quoted=False)
-    except UnicodeError, error:
+    except UnicodeError as error:
         # Make this error a little more explicit and catch-able.
-        if len(error.args) == 1 and type(error.args[0]) is str:
+        if len(error.args) == 1 and isinstance(error.args[0], str):
             raise MalformedUrlError('Invalid hostname: %s: %r' % (error.args[0], hostname))
         else:  # An exception I don't expect
             raise
@@ -191,28 +194,31 @@ def _decode(string, encoding='internet'):
     return string
 
 
+_ascii_plaintext = RFC3986.plaintext.encode('US-ASCII')
+
+
 def _unquote_bytes(string):
     """Similar to urllib.unquote, but only unquote ASCII-plaintext and non-ASCII bytes (0x80-0xFF).
     This is only for use by _decode(), above.
     """
 
-    res = string.split('%')
-    for i in xrange(1, len(res)):
+    res = string.split(b'%')
+    for i in range(1, len(res)):
         item = res[i]
         try:
             c = int(item[:2], 16)
         except ValueError:
-            res[i] = '%' + item
+            res[i] = b'%' + item
         else:
-            char = chr(c)
+            char = six.int2byte(c)
             if (
                     c >= 0x80 or
-                    char in RFC3986.plaintext
+                    char in _ascii_plaintext
             ):
                 res[i] = char + item[2:]
             else:
-                res[i] = '%' + item
-    return "".join(res)
+                res[i] = b'%' + item
+    return b''.join(res)
 
 
 _extra_dots_RE = re.compile(r'\.\.+')
@@ -224,7 +230,7 @@ def _is_punycoded(domain):
     """
     from encodings.idna import ace_prefix
 
-    return any(label.startswith(ace_prefix) for label in domain.split('.'))
+    return any(label.startswith(ace_prefix) for label in domain.split(b'.'))
 
 
 def _emailsplit(email):

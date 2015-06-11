@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # pylint:disable=protected-access
 import pytest
+import six
+
 import yelp_uri.encoding as E
 from yelp_uri.urllib_utf8 import quote
 
@@ -21,9 +23,17 @@ def test_bad_domain_segment_too_long():
     try:
         E.encode_uri('http://foo.%s.bar' % ('x' * 64))
     except E.MalformedUrlError as error:
+        if six.PY3:
+            error_msg = (
+                "Invalid hostname: encoding with 'IDNA' codec failed "
+                "(UnicodeError: label empty or too long): "
+            )
+        else:
+            error_msg = 'Invalid hostname: label empty or too long: '
+
         assert error.args == (
-            "Invalid hostname: label empty or too long: " +
-            "'foo.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.bar'",
+            error_msg +
+            repr(u"foo.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.bar"),
         )
 
 
@@ -126,11 +136,13 @@ def worst_case(strange_character):
     u"""
     generate a worst-case url, using a "strange" character
 
-    >>> print worst_case(u'ü')
+    >>> print(worst_case(u'ü'))
     http://ü:ü@www.ü.com/ü;ü;ü/ü;ü;ü?ü=ü&ü=ü#!ü/ü
     """
-    return strange_character.join(
-        ('http://', ':', '@www.', '.com/', ';', ';', '/', ';', ';', '?', '=', '&', '=', '#!', '/', ''))
+    template = ('http://', ':', '@www.', '.com/', ';', ';', '/', ';', ';', '?', '=', '&', '=', '#!', '/', '')
+    if isinstance(strange_character, six.binary_type):
+        template = (part.encode('US-ASCII') for part in template)
+    return strange_character.join(template)
 
 
 def test_worst_case_unicode():
@@ -161,7 +173,7 @@ def test_worst_case_ascii():
 def test_bad_bytes():
     # This is unlikely to happen except due to gross programming error,
     # but I want to show what *would* happen.
-    for bad_stuff in (u'\xFF', '\xFF', '%FF'):
+    for bad_stuff in (u'\xFF', b'\xFF', u'%FF', b'%FF'):
         strange_url = worst_case(bad_stuff)
         normalized_url = E.recode_uri(strange_url)
 
@@ -235,16 +247,16 @@ examples = pytest.mark.parametrize(('charname', 'chars', 'pathchars', 'expected_
 @examples
 def test_recode_unicode(charname, chars, pathchars, expected_url):
     del charname  # passed, but unused
-    url_template = "http://m{chars}nchen.com/m{chars}chen/{pathchars}"
-    unicode_url = url_template.decode('ascii').format(chars=chars, pathchars=pathchars)
+    url_template = u"http://m{chars}nchen.com/m{chars}chen/{pathchars}"
+    unicode_url = url_template.format(chars=chars, pathchars=pathchars)
     assert E.recode_uri(unicode_url) == expected_url
 
 
 @examples
 @pytest.mark.parametrize('encoding', ('latin1', 'windows-1252', 'utf8', 'ascii'))
 def test_recode_encoded(charname, chars, pathchars, expected_url, encoding):
-    url_template = "http://m{chars}nchen.com/m{chars}chen/{pathchars}"
-    unicode_url = url_template.decode('ascii').format(chars=chars, pathchars=pathchars)
+    url_template = u"http://m{chars}nchen.com/m{chars}chen/{pathchars}"
+    unicode_url = url_template.format(chars=chars, pathchars=pathchars)
 
     try:
         encoded_url = unicode_url.encode(encoding)
@@ -265,30 +277,30 @@ def test_recode_encoded(charname, chars, pathchars, expected_url, encoding):
 
 
 class TestUnquoteBytes(object):
-    ASCII = ''.join(chr(c) for c in range(0x80))
-    NON_ASCII = ''.join(chr(c) for c in range(0x80, 0x100))
+    ASCII = b''.join(six.int2byte(c) for c in range(0x80))
+    NON_ASCII = b''.join(six.int2byte(c) for c in range(0x80, 0x100))
 
     @staticmethod
     def assert_unquote_bytes(input_value, expected):
         assert E._unquote_bytes(input_value) == expected
 
     def test_dont_touch_unquoted_ascii(self):
-        url = 'http://yelp.com/' + self.ASCII
+        url = b'http://yelp.com/' + self.ASCII
         self.assert_unquote_bytes(url, url)
 
     def test_dont_touch_quoted_ascii(self):
         quoted_ascii = quote(self.ASCII)
-        url = 'http://yelp.com/' + quoted_ascii
+        url = b'http://yelp.com/' + quoted_ascii.encode('US-ASCII')
         self.assert_unquote_bytes(url, url)
 
     def test_dont_touch_unquoted_nonascii(self):
-        unquoted_url = 'http://yelp.com/' + self.NON_ASCII
+        unquoted_url = b'http://yelp.com/' + self.NON_ASCII
         self.assert_unquote_bytes(unquoted_url, unquoted_url)
 
     def test_unescape_quoted_nonascii(self):
         quoted_non_ascii = quote(self.NON_ASCII)
-        unquoted_url = 'http://yelp.com/' + self.NON_ASCII
-        quoted_url = 'http://yelp.com/' + quoted_non_ascii
+        unquoted_url = b'http://yelp.com/' + self.NON_ASCII
+        quoted_url = b'http://yelp.com/' + quoted_non_ascii.encode('US-ASCII')
         self.assert_unquote_bytes(quoted_url, unquoted_url)
 
 
@@ -299,7 +311,7 @@ class TestRecodeEmail(object):
     # The username is best encoded as simply utf8.
     expected = u'{utf8_munchen}@{idna_munchen}.com?subject={percent_munchen}'.format(
         utf8_munchen=munchen,
-        idna_munchen=munchen.encode('IDNA'),
+        idna_munchen=munchen.encode('IDNA').decode('US-ASCII'),
         percent_munchen=quote(munchen.encode('UTF-8')),
     )
 
@@ -309,7 +321,7 @@ class TestRecodeEmail(object):
 
     def test_not_an_email(self):
         not_an_email = u"They don't use email in " + self.munchen
-        assert E.encode_email(not_an_email) == not_an_email.encode('IDNA')
+        assert E.encode_email(not_an_email) == not_an_email.encode('IDNA').decode('US-ASCII')
 
     def test_encode_email(self):
         assert E.encode_email(self.email) == self.expected

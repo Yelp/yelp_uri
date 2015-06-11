@@ -11,9 +11,14 @@ Because email addresses resemble uris in several regards, we handle them under t
 # This namespace reserved for *very* general-purpse uri functions.
 
 import re
-from string import digits as DIGITS, letters as LETTERS, printable as PRINTABLE
+try:
+    from string import ascii_letters as LETTERS
+except ImportError:
+    from string import letters as LETTERS  # pylint: disable=no-name-in-module
+from string import digits as DIGITS, printable as PRINTABLE
 from collections import namedtuple
 
+from yelp_bytes import from_bytes
 import yelp_uri._urlparse_less_special as _urlparse
 
 
@@ -101,9 +106,9 @@ def netlocsplit(netloc):
     tmp.netloc = netloc
     try:
         port = tmp.port
-    except ValueError, error:
+    except ValueError as error:
         # Make this error a little more explicit and catch-able.
-        if len(error.args) == 1 and type(error.args[0]) is str:
+        if len(error.args) == 1 and isinstance(error.args[0], str):
             raise MalformedUrlError('Invalid port number: ' + error.args[0])
         else:  # An exception I don't expect
             raise
@@ -145,7 +150,7 @@ def urlsplit(url):
     url -- string url to be parsed.
     return -- a yelp.uri.SplitResult
     """
-    url = _urlparse.urlsplit(url)
+    url = _urlparse.urlsplit(from_bytes(url))
     nl = netlocsplit(url.netloc)
     return SplitResult(url.scheme, nl.username, nl.password, nl.hostname, nl.port, url.path, url.query, url.fragment)
 

@@ -1,5 +1,8 @@
 [MESSAGES CONTROL]
-disable=locally-disabled,missing-docstring
+disable=
+    locally-disabled,
+    missing-docstring,
+    maybe-no-member,
 
 [REPORTS]
 output-format=colorized
@@ -22,7 +25,11 @@ variable-rgx=[a-z_][a-z0-9_]{0,30}$
 max-line-length=131
 
 [TYPECHECK]
-ignored-classes=pytest,RFC3986
+ignored-classes=
+    pytest,
+    RFC3986,
+    _MovedItems,
+ignored-modules=six.moves
 
 [DESIGN]
 min-public-methods=0
