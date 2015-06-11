@@ -18,7 +18,9 @@ except ImportError:
 from string import digits as DIGITS, printable as PRINTABLE
 from collections import namedtuple
 
+import six
 from yelp_bytes import from_bytes
+
 import yelp_uri._urlparse_less_special as _urlparse
 
 
@@ -150,7 +152,9 @@ def urlsplit(url):
     url -- string url to be parsed.
     return -- a yelp.uri.SplitResult
     """
-    url = _urlparse.urlsplit(from_bytes(url))
+    url = _urlparse.urlsplit(
+        from_bytes(url) if isinstance(url, six.binary_type) else url
+    )
     nl = netlocsplit(url.netloc)
     return SplitResult(url.scheme, nl.username, nl.password, nl.hostname, nl.port, url.path, url.query, url.fragment)
 

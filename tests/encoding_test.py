@@ -42,6 +42,11 @@ def test_bad_domain_extra_dots():
     assert E.encode_uri('http://..foo..com../.bar.') == 'http://foo.com/.bar.'
 
 
+def test_recode_none_raises_attribute_error():
+    with pytest.raises(AttributeError):
+        E.recode_uri(None)
+
+
 def test_unicode_url_gets_quoted():
     url = u'http://www.yelp.com/münchen'
     assert E.recode_uri(url) == 'http://www.yelp.com/m%C3%BCnchen'
