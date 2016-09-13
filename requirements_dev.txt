@@ -10,3 +10,4 @@ pylint
 pytest
 pre-commit
 tox
+markupsafe
