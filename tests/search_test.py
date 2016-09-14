@@ -38,19 +38,19 @@ def test_email_regex():
     assert_no_email('Log in with http://guest@example.com...')
 
 
+def assert_finds_url(text, url):
+    match = url_regex.search(text)
+    assert match is not None, "Expected url_regex match on " + url + " (text: '" + text + "')"
+    assert match.group() == url
+
+def assert_finds_whole_url(url):
+    assert_finds_url(url, url)
+
+def assert_no_url(text):
+    assert url_regex.match(text) is None
+
 def test_url_regex():
     """Test that our url-matching regex and fast url/email matching regex work properly."""
-
-    def assert_finds_url(text, url):
-        match = url_regex.search(text)
-        assert match is not None, "Expected url_regex match on " + url + " (text: '" + text + "')"
-        assert match.group() == url
-
-    def assert_finds_whole_url(url):
-        assert_finds_url(url, url)
-
-    def assert_no_url(text):
-        assert url_regex.match(text) is None
 
     assert_finds_url('dictionary.com\'s', 'dictionary.com')
     assert_finds_url('yelp.com.', 'yelp.com')
@@ -80,6 +80,24 @@ def test_url_regex():
     assert_finds_whole_url(u'http://➡.ws/➡;➡;➡/➡;➡;➡?➡=➡&➡=➡#!➡/➡')
     assert_finds_whole_url('http://y.combinator')
     assert_finds_whole_url('http://.ocregion.com')
+
+    # Chops off everything after last tld, www.dmv.ca
+    assert_finds_url('https://www.dmv.ca.gov\\notpartofurl', 'https://www.dmv.ca.gov')
+    # Chops off path after www.dmv.ca
+    assert_finds_url(
+        'Contact the dmv: https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus\\nnext_paragraph',
+        'https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus'
+    )
+    # Chops off path at the last period, which is the last bad_end
+    assert_finds_url(
+        'Contact the dmv: https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus.html\\nnext_paragraph',
+        'https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus.html'
+    )
+    # :39 is a line number in this context but is valid path component
+    assert_finds_whole_url('https://media4.com/en_US.min.js:39')
+    # Proves :39 is indeed the path component and not the port
+    assert_finds_whole_url('https://media4.com:443/en_US.min.js:39')
+
     # Ticket: #31242
     colon_url = 'http://www.yelp.fr/biz/smalls-marseille#hrid:u_UQvMf97E8pD4HEb59uIw'
     assert_finds_whole_url(colon_url)
@@ -101,6 +119,12 @@ def test_url_regex():
         "...it used to be my go-to spot in the burbs for French."
     )
     assert_no_url('isemail@emailaddress.com')
+    assert_no_url('org.openqa.selenium.support.events') # events is a tld
+    assert_no_url('EventFiringWebElement.click')        # click is a tld
+    assert_no_url('os.name')                            # name is a tld
+    assert_no_url('main.py')                            # py is a tld
+    assert_no_url('foo.sh')                            # py is a tld
+    assert_no_url('pid.id')                            # py is a tld
 
     assert_finds_url('http://www.foo.com/blah#foo', 'http://www.foo.com/blah#foo')
     assert_finds_url('http://www.foo.com/blah!', 'http://www.foo.com/blah')
@@ -114,6 +138,7 @@ def test_url_regex():
 
     assert_finds_whole_url('http://Cervejoteca.com.br')
 
+def test_url_regex_i18n():
     # We now know the list of non-ascii top-level domains as well:
     assert_finds_url(
         u'This is a website: 中国互联网络信息中心.中国. No, really.',
