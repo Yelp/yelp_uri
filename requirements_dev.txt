@@ -5,7 +5,8 @@ ipdb
 coverage
 flake8
 mock
-astroid<1.3.3
-pylint<1.4
+astroid
+pylint
 pytest
 pre-commit
+tox

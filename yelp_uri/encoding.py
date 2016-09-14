@@ -7,11 +7,12 @@ In general, hostnames should be punycode, usernames should be utf8, and everythi
 import re
 
 import six
-quote = six.moves.urllib.parse.quote
 
 from yelp_uri import urlsplit, urlunsplit, RFC3986, MalformedUrlError, SplitResult
 from yelp_bytes import from_bytes
 from yelp_bytes import to_bytes
+
+quote = six.moves.urllib.parse.quote
 
 
 def encode_uri(uri):

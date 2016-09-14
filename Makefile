@@ -1,16 +1,18 @@
+export PATH := $(PWD)/bin:$(PWD)/venv/bin:$(PATH)
 
 REBUILD_FLAG =
 
 .PHONY: all
 all: venv test
 
-.PHONY: venv
 venv: .venv.touch
-	tox -e venv $(REBUILD_FLAG)
+	rm -rf venv
+	virtualenv venv --python python2.7
+	pip install -r requirements_dev.txt
 
 .PHONY: tests test
 tests: test
-test: .venv.touch
+test: venv
 	tox $(REBUILD_FLAG)
 
 
@@ -23,5 +25,5 @@ test: .venv.touch
 clean:
 	find . -iname '*.pyc' | xargs rm -f
 	rm -rf .tox
-	rm -rf ./venv-*
+	rm -rf ./venv
 	rm -f .venv.touch
