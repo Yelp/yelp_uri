@@ -3,6 +3,10 @@ disable=
     locally-disabled,
     missing-docstring,
     maybe-no-member,
+    redefined-variable-type,
+    redundant-keyword-arg,
+    too-many-function-args,
+
 
 [REPORTS]
 output-format=colorized

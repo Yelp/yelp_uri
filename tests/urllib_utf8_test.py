@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import six
-urllib = six.moves.urllib
 
 from yelp_uri import urllib_utf8
+
+urllib = six.moves.urllib
 
 
 def test_urlencode():
