@@ -23,7 +23,7 @@ from .tlds import tlds
 url_regex = re.compile(
     r"""
         # Don't start in the middle of something.
-        (?<!  [\w.@/:-] )
+        (?<!  [\w./:-] )
         (?!  mailto: )
         # Looking for a domain name
         (
@@ -39,6 +39,8 @@ url_regex = re.compile(
             [^%(not_regname)s.]{2,}
             (:\d+)? # maybe a port?
         |
+            # Don't start in the middle of an email
+            (?<!  @ )
             # or else look for a domain name with a known suffix.
             # We're more strict about dots / userinfo in this case, since the
             # user intent is more ambiguous.

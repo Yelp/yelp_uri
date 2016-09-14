@@ -66,6 +66,9 @@ def test_url_regex():
         'http://en.wikipedia.org/wiki/Eon_(geology)',
     )
     assert_finds_url('http://example.com:8O80', 'http://example.com')
+    assert_finds_url('notemail@https://example.com', 'https://example.com')
+    assert_finds_url('notemail@www.example.com', 'www.example.com')
+
     assert_finds_whole_url('http://example.com:8080')
     assert_finds_whole_url('http://lil_jay78.blogspot.com/')
     assert_finds_whole_url('http://yelp.com/berkeley')
@@ -97,6 +100,7 @@ def test_url_regex():
         "I've been greatly disappointed with Gilmore's the last couple years" +
         "...it used to be my go-to spot in the burbs for French."
     )
+    assert_no_url('isemail@emailaddress.com')
 
     assert_finds_url('http://www.foo.com/blah#foo', 'http://www.foo.com/blah#foo')
     assert_finds_url('http://www.foo.com/blah!', 'http://www.foo.com/blah')
