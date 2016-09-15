@@ -5,6 +5,7 @@ from yelp_uri import RFC3986
 from .tlds.all import all_tlds
 from .tlds.common import common_tlds
 
+
 def create_url_regex(rfc3986, tlds):
     # A regex for finding urls in free-form text.
     # This regex is space-indented, so that it looks OK on ReviewBoard

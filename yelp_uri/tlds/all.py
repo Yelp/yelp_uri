@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=too-many-lines
+
 from __future__ import unicode_literals
 # Generated automatically. To regenerate:
 #    ./bin/generate-tlds > yelp_uri/tlds/all.py
