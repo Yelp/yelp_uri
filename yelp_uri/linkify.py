@@ -12,10 +12,10 @@ def create_link(uri, markup_class):
     return markup_class('<a href="{uri}">{text}</a>').format(uri=uri, text=text)
 
 
-def linkify(text, markup_class):
+def linkify(text, markup_class, regex=url_regex_common_tlds):
     result = []
     prev_end = 0
-    for match in url_regex_common_tlds.finditer(text):
+    for match in regex.finditer(text):
         result.append(text[prev_end:match.start()])
         result.append(create_link(match.group(), markup_class))
         prev_end = match.end()
