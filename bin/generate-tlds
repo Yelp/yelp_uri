@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
 This reads the IANA-maintained list of tlds and formats/outputs them for use
-in the domains regular expression. To regenerate: 
-    ./tools/generate-tlds > yelp_uri/tlds.py
+in the domains regular expression. To regenerate:
+    ./bin/generate-tlds > yelp_uri/tlds/all.py
 """
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -38,10 +38,12 @@ def main(url='http://data.iana.org/TLD/tlds-alpha-by-domain.txt'):
 
     print('''\
 # -*- coding: utf-8 -*-
+# pylint: disable=too-many-lines
+
 from __future__ import unicode_literals
 # Generated automatically. To regenerate:
-#    ./tools/generate-tlds  > yelp_uri/tlds.py
-tlds = '|'.join((
+#    ./bin/generate-tlds > yelp_uri/tlds/all.py
+all_tlds = '|'.join((
     '{0}',
 ))'''.format(domains_string).encode('UTF-8'))
 

@@ -64,7 +64,7 @@ class RFC3986(object):  # pylint:disable=too-many-instance-attributes
         self.userinfo = self.unreserved + '+'
 
         # Yelp extension: characters that don't belong at the end of a URI
-        self.bad_end = self.whitespace + '''<(.!'",;?:-'''
+        self.bad_end = self.whitespace + '''<(.!'",;?:-\\'''
         # The set of characters that is always OK to unescape.
         self.plaintext = self.alphanum + '_-'
         # The set of allowable URL characters.
