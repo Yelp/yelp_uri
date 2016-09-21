@@ -31,6 +31,41 @@ class MalformedUrlError(UnicodeError):
     pass
 
 
+class RFC3986Meta(type):  # pylint:disable=too-many-instance-attributes
+    def __init__(cls, name, bases, attrs):
+        cls.re = cls.produce_character_classes()  # pylint:disable=invalid-name
+
+    def produce_character_classes(cls):
+        class RFC3986re(object):
+            pass
+
+        for attr in dir(cls):
+            if attr.startswith('_') or attr == 're':
+                continue
+
+            val = getattr(cls, attr)
+            re_val = re.escape(val)
+            re_val = re.sub('[^' + re_val + ']', '', PRINTABLE)
+            re_val = cls.norm_re_class(re_val)
+            # print '%20s : %s' % (attr, re_val)
+            setattr(RFC3986re, attr, re_val)
+
+            neg_attr = 'not_' + attr
+            neg_val = re.sub('[' + re_val + ']', '', PRINTABLE)
+            neg_val = cls.norm_re_class(neg_val)
+            # print '%20s : %s' % (neg_attr, neg_val)
+            setattr(RFC3986re, neg_attr, neg_val)
+
+        return RFC3986re
+
+    def norm_re_class(cls, re_class):
+        re_class = re_class.replace(cls.whitespace, 'space')
+        if '_' in re_class and cls.alphanum in re_class:
+            re_class = re_class.replace(cls.alphanum, 'word').replace(r'\_', '')
+        return re.escape(re_class).replace('space', r'\s').replace('word', r'\w')
+
+
+@six.add_metaclass(RFC3986Meta)
 class RFC3986(object):  # pylint:disable=too-many-instance-attributes
     """
     Codify some knowlege about the characters in a URL
@@ -41,64 +76,33 @@ class RFC3986(object):  # pylint:disable=too-many-instance-attributes
     in a regular expression.
     """
 
-    def __init__(self):
-        # Basic character classes, useful later.
-        self.digits = DIGITS
-        self.letters = LETTERS
-        self.alphanum = DIGITS + LETTERS
-        self.whitespace = re.search(r'\s+', PRINTABLE).group()
+    # Basic character classes, useful later.
+    digits = DIGITS
+    letters = LETTERS
+    alphanum = DIGITS + LETTERS
+    whitespace = re.search(r'\s+', PRINTABLE).group()
 
-        # From http://tools.ietf.org/html/rfc3986#appendix-A
-        # In reverse order:
-        self.subdelims = "!$&'()*+,;="
-        self.gendelims = ':/?#@'
-        self.reserved = self.subdelims + self.gendelims
-        # Combined: Wherever unreserved is used, percent-encoded is as well.
-        self.unreserved = self.alphanum + '-._~' + '%'
-        self.pchar = self.unreserved + self.subdelims + ':@'
-        self.query = self.pchar + '/?'
-        self.fragment = self.pchar + '/?'
-        self.path = self.pchar + '/'
-        # deviation: The "subdelims" actually don't make sense in domain names or user names
-        self.regname = self.unreserved
-        self.userinfo = self.unreserved + '+'
+    # From http://tools.ietf.org/html/rfc3986#appendix-A
+    # In reverse order:
+    subdelims = "!$&'()*+,;="
+    gendelims = ':/?#@'
+    reserved = subdelims + gendelims
+    # Combined: Wherever unreserved is used, percent-encoded is as well.
+    unreserved = alphanum + '-._~' + '%'
+    pchar = unreserved + subdelims + ':@'
+    query = pchar + '/?'
+    fragment = pchar + '/?'
+    path = pchar + '/'
+    # deviation: The "subdelims" actually don't make sense in domain names or user names
+    regname = unreserved
+    userinfo = unreserved + '+'
 
-        # Yelp extension: characters that don't belong at the end of a URI
-        self.bad_end = self.whitespace + '''<(.!'",;?:-\\'''
-        # The set of characters that is always OK to unescape.
-        self.plaintext = self.alphanum + '_-'
-        # The set of allowable URL characters.
-        self.url = self.unreserved + self.reserved
-
-        self.re = self.produce_character_classes()  # pylint:disable=invalid-name
-
-    def produce_character_classes(self):
-        class RFC3986re(object):
-            pass
-
-        for attr, val in vars(self).items():
-            re_val = re.escape(val)
-            re_val = re.sub('[^' + re_val + ']', '', PRINTABLE)
-            re_val = self.norm_re_class(re_val)
-            # print '%20s : %s' % (attr, re_val)
-            setattr(RFC3986re, attr, re_val)
-
-            neg_attr = 'not_' + attr
-            neg_val = re.sub('[' + re_val + ']', '', PRINTABLE)
-            neg_val = self.norm_re_class(neg_val)
-            # print '%20s : %s' % (neg_attr, neg_val)
-            setattr(RFC3986re, neg_attr, neg_val)
-
-        return RFC3986re
-
-    def norm_re_class(self, re_class):
-        re_class = re_class.replace(self.whitespace, 'space')
-        if '_' in re_class and self.alphanum in re_class:
-            re_class = re_class.replace(self.alphanum, 'word').replace(r'\_', '')
-        return re.escape(re_class).replace('space', r'\s').replace('word', r'\w')
-
-# This is a singleton class
-RFC3986 = RFC3986()
+    # Yelp extension: characters that don't belong at the end of a URI
+    bad_end = whitespace + '''<(.!'",;?:-\\'''
+    # The set of characters that is always OK to unescape.
+    plaintext = alphanum + '_-'
+    # The set of allowable URL characters.
+    url = unreserved + reserved
 
 
 def netlocsplit(netloc):
