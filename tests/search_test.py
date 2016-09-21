@@ -86,14 +86,12 @@ def assert_url_regex(regex_assert):
     regex_assert.finds_whole_url('http://y.combinator')
     regex_assert.finds_whole_url('http://.ocregion.com')
 
-    # Chops off everything after last tld, www.dmv.ca
+    # uri should stop search at backslash
     regex_assert.finds_url('https://www.dmv.ca.gov\\notpartofurl', 'https://www.dmv.ca.gov')
-    # Chops off path after www.dmv.ca
     regex_assert.finds_url(
         'Contact the dmv: https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus\\nnext_paragraph',
         'https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus'
     )
-    # Chops off path at the last period, which is the last bad_end
     regex_assert.finds_url(
         'Contact the dmv: https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus.html\\nnext_paragraph',
         'https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus.html'
@@ -127,9 +125,32 @@ def assert_url_regex(regex_assert):
 
     regex_assert.finds_url('http://www.foo.com/blah#foo', 'http://www.foo.com/blah#foo')
     regex_assert.finds_url('http://www.foo.com/blah!', 'http://www.foo.com/blah')
-    regex_assert.finds_url('http://www.foo.com/blah_(disambiguation)', 'http://www.foo.com/blah_(disambiguation)')
 
     regex_assert.finds_whole_url('http://Cervejoteca.com.br')
+
+    assert_url_open_bracket(regex_assert)
+
+
+def assert_url_open_bracket(regex_assert):
+    # uri should not include [
+    regex_assert.finds_url('http://example.com[', 'http://example.com')
+    regex_assert.finds_url('http://example.com[blah', 'http://example.com')
+    regex_assert.finds_url('http://example.com[blah]', 'http://example.com')
+    regex_assert.finds_url('http://example.com/path[', 'http://example.com/path')
+
+    # uri should not include ( unless it is properly closed
+    regex_assert.finds_url('http://example.com(', 'http://example.com')
+    regex_assert.finds_url('http://example.com(blah', 'http://example.com')
+    regex_assert.finds_url('http://example.com(blah)', 'http://example.com')
+    regex_assert.finds_url('http://example.com/foo(', 'http://example.com/foo')
+    # Properly closed, only case where url with ( is valid
+    regex_assert.finds_whole_url('http://www.foo.com/blah_(disambiguation)')
+
+    # uri should not include {
+    regex_assert.finds_url('http://example.com{', 'http://example.com')
+    regex_assert.finds_url('http://example.com{blah', 'http://example.com')
+    regex_assert.finds_url('http://example.com{blah}', 'http://example.com')
+    regex_assert.finds_url('http://example.com/foo{', 'http://example.com/foo')
 
 
 def test_url_regex():
