@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pytest
 import six
 
 from yelp_uri.search import email_regex
@@ -86,14 +87,12 @@ def assert_url_regex(regex_assert):
     regex_assert.finds_whole_url('http://y.combinator')
     regex_assert.finds_whole_url('http://.ocregion.com')
 
-    # Chops off everything after last tld, www.dmv.ca
+    # uri should stop search at backslash
     regex_assert.finds_url('https://www.dmv.ca.gov\\notpartofurl', 'https://www.dmv.ca.gov')
-    # Chops off path after www.dmv.ca
     regex_assert.finds_url(
         'Contact the dmv: https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus\\nnext_paragraph',
         'https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus'
     )
-    # Chops off path at the last period, which is the last bad_end
     regex_assert.finds_url(
         'Contact the dmv: https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus.html\\nnext_paragraph',
         'https://www.dmv.ca.gov/portal/dmv/dmvfooter2/contactus.html'
@@ -127,7 +126,6 @@ def assert_url_regex(regex_assert):
 
     regex_assert.finds_url('http://www.foo.com/blah#foo', 'http://www.foo.com/blah#foo')
     regex_assert.finds_url('http://www.foo.com/blah!', 'http://www.foo.com/blah')
-    regex_assert.finds_url('http://www.foo.com/blah_(disambiguation)', 'http://www.foo.com/blah_(disambiguation)')
 
     regex_assert.finds_whole_url('http://Cervejoteca.com.br')
 
@@ -182,3 +180,72 @@ def test_url_regex_i18n():
             u'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.'.encode('UTF-8'),
             u'中国互联网络信息中心.xn--fiqs8s'.encode('UTF-8')
         )
+
+
+@pytest.mark.parametrize('test_input,expected', [
+    # uri should not include [
+    ('http://example.com[', 'http://example.com'),
+    ('http://example.com[', 'http://example.com'),
+    ('http://example.com[blah', 'http://example.com'),
+    ('http://example.com[blah]', 'http://example.com'),
+    ('http://example.com/path[', 'http://example.com/path'),
+
+    # uri should not include ( unless it is properly closed
+    ('http://example.com(', 'http://example.com'),
+    ('http://example.com(blah', 'http://example.com'),
+    ('http://example.com(blah)', 'http://example.com'),
+    ('http://example.com/foo(', 'http://example.com/foo'),
+
+    # uri should not include {
+    ('http://example.com{', 'http://example.com'),
+    ('http://example.com{blah', 'http://example.com'),
+    ('http://example.com{blah}', 'http://example.com'),
+    ('http://example.com/foo{', 'http://example.com/foo'),
+])
+def test_url_open_bracket_finds_url(test_input, expected):
+    """Test that our url-matching regex and fast url/email matching regex work properly."""
+    regex_assert = RegexAssertion(url_regex)
+    regex_assert.finds_url(test_input, expected)
+
+
+@pytest.mark.parametrize('test_input', [
+    # Properly closed, only case where url with ( is valid
+    ('http://www.foo.com/blah_(disambiguation)'),
+])
+def test_url_open_bracket_finds_whole_url(test_input):
+    regex_assert = RegexAssertion(url_regex)
+    regex_assert.finds_whole_url(test_input)
+
+
+@pytest.mark.parametrize('test_input,expected', [
+    # uri should not include [
+    ('http://example.com[', 'http://example.com'),
+    ('http://example.com[', 'http://example.com'),
+    ('http://example.com[blah', 'http://example.com'),
+    ('http://example.com[blah]', 'http://example.com'),
+    ('http://example.com/path[', 'http://example.com/path'),
+
+    # uri should not include ( unless it is properly closed
+    ('http://example.com(', 'http://example.com'),
+    ('http://example.com(blah', 'http://example.com'),
+    ('http://example.com(blah)', 'http://example.com'),
+    ('http://example.com/foo(', 'http://example.com/foo'),
+
+    # uri should not include {
+    ('http://example.com{', 'http://example.com'),
+    ('http://example.com{blah', 'http://example.com'),
+    ('http://example.com{blah}', 'http://example.com'),
+    ('http://example.com/foo{', 'http://example.com/foo'),
+])
+def test_custom_regex_open_bracket_finds_url(test_input, expected):
+    regex_assert = RegexAssertion(url_regex_common_tlds)
+    regex_assert.finds_url(test_input, expected)
+
+
+@pytest.mark.parametrize('test_input', [
+    # Properly closed, only case where url with ( is valid
+    ('http://www.foo.com/blah_(disambiguation)'),
+])
+def test_custom_regex_open_bracket_finds_whole_url(test_input):
+    regex_assert = RegexAssertion(url_regex_common_tlds)
+    regex_assert.finds_whole_url(test_input)

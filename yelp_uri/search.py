@@ -54,7 +54,7 @@ def create_url_regex(rfc3986, tlds):
                 (:\d+)? # maybe a port?
             )
             # An optional path/query/fragment component
-            (
+            (?P<path_query_fragment>
                 [/?#]
                 (
                     # Figure out if we have parens in our url
