@@ -129,6 +129,30 @@ def assert_url_regex(regex_assert):
 
     regex_assert.finds_whole_url('http://Cervejoteca.com.br')
 
+    assert_url_open_bracket(regex_assert)
+
+
+def assert_url_open_bracket(regex_assert):
+    # uri should not include [
+    regex_assert.finds_url('http://example.com[', 'http://example.com')
+    regex_assert.finds_url('http://example.com[blah', 'http://example.com')
+    regex_assert.finds_url('http://example.com[blah]', 'http://example.com')
+    regex_assert.finds_url('http://example.com/path[', 'http://example.com/path')
+
+    # uri should not include ( unless it is properly closed
+    regex_assert.finds_url('http://example.com(', 'http://example.com')
+    regex_assert.finds_url('http://example.com(blah', 'http://example.com')
+    regex_assert.finds_url('http://example.com(blah)', 'http://example.com')
+    regex_assert.finds_url('http://example.com/foo(', 'http://example.com/foo')
+    # Properly closed, only case where url with ( is valid
+    regex_assert.finds_whole_url('http://www.foo.com/blah_(disambiguation)')
+
+    # uri should not include {
+    regex_assert.finds_url('http://example.com{', 'http://example.com')
+    regex_assert.finds_url('http://example.com{blah', 'http://example.com')
+    regex_assert.finds_url('http://example.com{blah}', 'http://example.com')
+    regex_assert.finds_url('http://example.com/foo{', 'http://example.com/foo')
+
 
 def test_url_regex():
     """Test that our url-matching regex and fast url/email matching regex work properly."""
