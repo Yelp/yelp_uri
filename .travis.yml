@@ -1,6 +1,12 @@
 language: python
-env: # These should match the tox env list
-    - TOXENV=py27
-    - TOXENV=py35
+matrix:
+    include:
+        -   env: TOXENV=py27
+        -   env: TOXENV=py36
+            python: 3.6
 install: pip install tox
 script: tox
+cache:
+    directories:
+        - $HOME/.cache/pip
+        - $HOME/.cache/pre-commit

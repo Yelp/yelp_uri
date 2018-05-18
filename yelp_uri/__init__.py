@@ -14,7 +14,7 @@ import re
 try:
     from string import ascii_letters as LETTERS
 except ImportError:
-    from string import letters as LETTERS  # pylint: disable=no-name-in-module
+    from string import letters as LETTERS
 from string import digits as DIGITS, printable as PRINTABLE
 from collections import namedtuple
 
@@ -31,7 +31,7 @@ class MalformedUrlError(UnicodeError):
     pass
 
 
-class RFC3986(object):  # pylint:disable=too-many-instance-attributes
+class RFC3986(object):
     """
     Codify some knowlege about the characters in a URL
     From:
@@ -70,7 +70,7 @@ class RFC3986(object):  # pylint:disable=too-many-instance-attributes
         # The set of allowable URL characters.
         self.url = self.unreserved + self.reserved
 
-        self.re = self.produce_character_classes()  # pylint:disable=invalid-name
+        self.re = self.produce_character_classes()
 
     def produce_character_classes(self):
         class RFC3986re(object):
@@ -96,6 +96,7 @@ class RFC3986(object):  # pylint:disable=too-many-instance-attributes
         if '_' in re_class and self.alphanum in re_class:
             re_class = re_class.replace(self.alphanum, 'word').replace(r'\_', '')
         return re.escape(re_class).replace('space', r'\s').replace('word', r'\w')
+
 
 # This is a singleton class
 RFC3986 = RFC3986()

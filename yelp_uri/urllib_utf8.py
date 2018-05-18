@@ -22,7 +22,6 @@ import six
 
 if six.PY3:
     # Python3 supports all of these out of the box
-    # pylint: disable=unused-import,no-name-in-module,import-error
     from urllib.parse import parse_qs
     from urllib.parse import quote
     from urllib.parse import quote_plus
