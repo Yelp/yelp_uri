@@ -114,6 +114,7 @@ email_regex = re.compile(
 # List the names that this module "really" exports.
 __all__ = (
     'url_regex',
+    'url_regex_common_tlds',
     'email_regex',
 )
 # vim:et:sts=4
