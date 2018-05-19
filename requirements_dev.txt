@@ -1,12 +1,5 @@
--e .
-
-ipython<2.0.0
-ipdb
 coverage
 flake8
 mock
-astroid
-pylint
 pytest
 pre-commit
-tox

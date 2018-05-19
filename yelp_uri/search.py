@@ -85,6 +85,7 @@ def create_url_regex(rfc3986, tlds):
         re.VERBOSE | re.UNICODE | re.IGNORECASE,
     )
 
+
 url_regex = create_url_regex(RFC3986, all_tlds)
 url_regex_common_tlds = create_url_regex(RFC3986, common_tlds)
 
@@ -114,6 +115,7 @@ email_regex = re.compile(
 # List the names that this module "really" exports.
 __all__ = (
     'url_regex',
+    'url_regex_common_tlds',
     'email_regex',
 )
 # vim:et:sts=4

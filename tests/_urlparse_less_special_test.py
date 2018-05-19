@@ -49,7 +49,7 @@ parse_qs_test_cases = [
 ]
 
 
-class UrlParseTestCase(unittest.TestCase):  # pylint:disable=too-many-public-methods
+class UrlParseTestCase(unittest.TestCase):
     def checkRoundtrips(self, url, parsed, split):
         result = urlparse.urlparse(url)
         self.assertEqual(result, parsed)
