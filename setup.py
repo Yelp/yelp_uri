@@ -16,9 +16,9 @@ def main():
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.5',
         ],
-        packages=find_packages('.', exclude=('tests*',)),
+        packages=find_packages(exclude=('tests*',)),
         install_requires=[
-            'six',
+            'six>=1.11.0',
             'yelp_encodings',
             'yelp_bytes'
         ],
