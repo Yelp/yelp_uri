@@ -7,7 +7,7 @@ all: venv test
 
 venv: .venv.touch
 	rm -rf venv
-	virtualenv venv --python python2.7
+	virtualenv venv --python python3.8
 	pip install -r requirements_dev.txt
 
 .PHONY: tests test

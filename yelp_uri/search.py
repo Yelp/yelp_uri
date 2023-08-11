@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 import re
 
-from yelp_uri import RFC3986
 from .tlds.all import all_tlds
 from .tlds.common import common_tlds
+from yelp_uri import RFC3986
 
 
 def create_url_regex(rfc3986, tlds):

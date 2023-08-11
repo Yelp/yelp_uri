@@ -4,9 +4,8 @@ This reads the IANA-maintained list of tlds and formats/outputs them for use
 in the domains regular expression. To regenerate:
     ./bin/generate-tlds > yelp_uri/tlds/all.py
 """
-from __future__ import unicode_literals
-from __future__ import print_function
 import sys
+
 import urllib2
 
 
@@ -42,7 +41,7 @@ from __future__ import unicode_literals
 # Generated automatically. To regenerate:
 #    ./bin/generate-tlds > yelp_uri/tlds/all.py
 all_tlds = '|'.join((
-    '{0}',
+    '{}',
 ))'''.format(domains_string).encode('UTF-8'))
 
 
