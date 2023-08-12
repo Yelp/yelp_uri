@@ -1,18 +1,19 @@
-# -*- coding: utf-8 -*-
 """Handle encoding of uris.
 
 This is complicated since a uri consists of several parts with non-uniform encoding schemes.
 In general, hostnames should be punycode, usernames should be utf8, and everything else should be urlquote+utf8.
 """
 import re
+import urllib.parse
 
-import six
-
-from yelp_uri import urlsplit, urlunsplit, RFC3986, MalformedUrlError, SplitResult
 from yelp_bytes import from_bytes
 from yelp_bytes import to_bytes
 
-quote = six.moves.urllib.parse.quote
+from yelp_uri import MalformedUrlError
+from yelp_uri import RFC3986
+from yelp_uri import SplitResult
+from yelp_uri import urlsplit
+from yelp_uri import urlunsplit
 
 
 def encode_uri(uri):
@@ -147,7 +148,7 @@ def _encode(string, encoding='UTF-8', expected='', quoted=True):
     if encoding:
         string = string.encode(encoding)
         if quoted:
-            string = quote(string, expected)
+            string = urllib.parse.quote(string, expected)
         else:
             string = string.decode('ASCII')
 
@@ -168,7 +169,7 @@ def _encode_hostname(hostname):
     except UnicodeError as error:
         # Make this error a little more explicit and catch-able.
         if len(error.args) == 1 and isinstance(error.args[0], str):
-            raise MalformedUrlError('Invalid hostname: %s: %r' % (error.args[0], hostname))
+            raise MalformedUrlError(f'Invalid hostname: {error.args[0]}: {hostname!r}')
         else:  # An exception I don't expect
             raise
 
@@ -211,7 +212,7 @@ def _unquote_bytes(string):
         except ValueError:
             res[i] = b'%' + item
         else:
-            char = six.int2byte(c)
+            char = bytes((c,))
             if (
                     c >= 0x80 or
                     char in _ascii_plaintext

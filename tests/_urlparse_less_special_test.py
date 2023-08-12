@@ -1,14 +1,10 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
 """Tests are also pulled from stdlib 2.6
 This file is space-indented to ease merging from upstream.
 
 http://hg.python.org/cpython/raw-file/4a17784f2fee/Lib/test/test_urlparse.py
 """
-
 import unittest
-
-import six
 
 import yelp_uri._urlparse_less_special as urlparse
 
@@ -446,7 +442,7 @@ class UrlParseTestCase(unittest.TestCase):
     def test_caching(self):
         # Test case for bug #1313119
         uri = "http://example.com/doc/"
-        unicode_uri = six.text_type(uri)
+        unicode_uri = str(uri)
 
         urlparse.urlparse(unicode_uri)
         p = urlparse.urlparse(uri)

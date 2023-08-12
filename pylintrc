@@ -33,7 +33,6 @@ ignored-classes=
     pytest,
     RFC3986,
     _MovedItems,
-ignored-modules=six.moves
 
 [DESIGN]
 min-public-methods=0

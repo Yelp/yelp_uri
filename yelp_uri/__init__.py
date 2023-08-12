@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The python standard library is a bit deficient in its handling of urls.
 This namespace contains the yelp extensions to the stdlib functionality.
@@ -9,7 +8,6 @@ Where RFC3986 is incompatible with RFC2396 (the older, obsoleted standard), we p
 Because email addresses resemble uris in several regards, we handle them under this namespace as well.
 """
 # This namespace reserved for *very* general-purpse uri functions.
-
 import re
 try:
     from string import ascii_letters as LETTERS
@@ -18,7 +16,6 @@ except ImportError:
 from string import digits as DIGITS, printable as PRINTABLE
 from collections import namedtuple
 
-import six
 from yelp_bytes import from_bytes
 
 import yelp_uri._urlparse_less_special as _urlparse
@@ -31,7 +28,7 @@ class MalformedUrlError(UnicodeError):
     pass
 
 
-class RFC3986(object):
+class RFC3986:
     """
     Codify some knowlege about the characters in a URL
     From:
@@ -73,7 +70,7 @@ class RFC3986(object):
         self.re = self.produce_character_classes()
 
     def produce_character_classes(self):
-        class RFC3986re(object):
+        class RFC3986re:
             pass
 
         for attr, val in vars(self).items():
@@ -154,7 +151,7 @@ def urlsplit(url):
     return -- a yelp.uri.SplitResult
     """
     url = _urlparse.urlsplit(
-        from_bytes(url) if isinstance(url, six.binary_type) else url
+        from_bytes(url) if isinstance(url, bytes) else url
     )
     nl = netlocsplit(url.netloc)
     return SplitResult(url.scheme, nl.username, nl.password, nl.hostname, nl.port, url.path, url.query, url.fragment)

@@ -1,5 +1,6 @@
+repos:
 -   repo: git@github.com:pre-commit/pre-commit-hooks
-    sha: ca93f6834f2afc8a8f7de46c0e02076419077c7a
+    rev: v4.4.0
     hooks:
     -   id: trailing-whitespace
         files: \.(py|sh|yaml)$
@@ -11,6 +12,16 @@
         files: \.py$
     -   id: name-tests-test
         files: tests/.+\.py$
-    -   id: flake8
-        files: \.py$
-        args: [--max-line-length=131]
+    -   id: fix-encoding-pragma
+        args:
+          - --remove
+        language_version: python3.8
+-   repo: http://github.com/asottile/reorder_python_imports
+    rev: v3.10.0
+    hooks:
+    -   id: reorder-python-imports
+-   repo: http://github.com/asottile/pyupgrade
+    rev: v3.10.1
+    hooks:
+    -   id: pyupgrade
+        args: ['--py38-plus']

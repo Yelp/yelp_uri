@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # vim:et:sts=4:ts=4
 """
 This is a copy of the python2.6 stdlib urlparse with special cases factored out.
@@ -35,8 +34,6 @@ test_urlparse.py provides a good indicator of parsing behavior.
 """
 from collections import namedtuple
 
-import six
-
 
 # This is a stdlib file. To ease merging, we won't fix these style issues.
 
@@ -58,7 +55,7 @@ def clear_cache():
     _parse_cache.clear()
 
 
-class ResultMixin(object):
+class ResultMixin:
     """Shared methods for the parsed result objects."""
 
     @property
@@ -209,7 +206,7 @@ def urlunparse(data):
     (the draft states that these are equivalent)."""
     scheme, netloc, url, params, query, fragment = data
     if params:
-        url = "%s;%s" % (url, params)
+        url = f"{url};{params}"
     return urlunsplit((scheme, netloc, url, query, fragment))
 
 
@@ -309,7 +306,7 @@ def urldefrag(url):
 
 
 _hexdig = '0123456789ABCDEFabcdef'
-_hextochr = dict((a + b, chr(int(a + b, 16))) for a in _hexdig for b in _hexdig)
+_hextochr = {a + b: chr(int(a + b, 16)) for a in _hexdig for b in _hexdig}
 
 
 def unquote(s):
@@ -322,7 +319,7 @@ def unquote(s):
         except KeyError:
             res[i] = '%' + item
         except UnicodeDecodeError:
-            res[i] = six.unichr(int(item[:2], 16)) + item[2:]
+            res[i] = chr(int(item[:2], 16)) + item[2:]
     return "".join(res)
 
 
@@ -380,7 +377,7 @@ def parse_qsl(qs, keep_blank_values=0, strict_parsing=0):
         nv = name_value.split('=', 1)
         if len(nv) != 2:
             if strict_parsing:
-                raise ValueError("bad query field: %r" % (name_value,))
+                raise ValueError(f"bad query field: {name_value!r}")
             # Handle case of a control-name with no equal sign
             if keep_blank_values:
                 nv.append('')

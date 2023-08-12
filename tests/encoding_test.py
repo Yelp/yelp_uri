@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
 import pytest
-import six
 
 import yelp_uri.encoding as E
 from yelp_uri.urllib_utf8 import quote
@@ -22,17 +20,14 @@ def test_bad_domain_segment_too_long():
     try:
         E.encode_uri('http://foo.%s.bar' % ('x' * 64))
     except E.MalformedUrlError as error:
-        if six.PY3:
-            error_msg = (
-                "Invalid hostname: encoding with 'IDNA' codec failed "
-                "(UnicodeError: label empty or too long): "
-            )
-        else:
-            error_msg = 'Invalid hostname: label empty or too long: '
+        error_msg = (
+            "Invalid hostname: encoding with 'IDNA' codec failed "
+            "(UnicodeError: label empty or too long): "
+        )
 
         assert error.args == (
             error_msg +
-            repr(u"foo.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.bar"),
+            repr("foo.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.bar"),
         )
 
 
@@ -47,44 +42,44 @@ def test_recode_none_raises_attribute_error():
 
 
 def test_unicode_url_gets_quoted():
-    url = u'http://www.yelp.com/münchen'
+    url = 'http://www.yelp.com/münchen'
     assert E.recode_uri(url) == 'http://www.yelp.com/m%C3%BCnchen'
 
 
 def test_mixed_quoting_url():
     """Test that a url with mixed quoting has uniform quoting after requoting"""
-    url = u'http://www.yelp.com/m%C3%BCnchen/münchen'
+    url = 'http://www.yelp.com/m%C3%BCnchen/münchen'
     assert E.recode_uri(url) == 'http://www.yelp.com/m%C3%BCnchen/m%C3%BCnchen'
 
 
 def test_mixed_quoting_param():
     """Tests that a url with mixed quoting in the parameters has uniform quoting after requoting"""
-    url = u'http://www.yelp.com?m%C3%BCnchen=münchen'
+    url = 'http://www.yelp.com?m%C3%BCnchen=münchen'
     assert E.recode_uri(url) == 'http://www.yelp.com?m%C3%BCnchen=m%C3%BCnchen'
 
 
 def test_mixed_encoding():
     """Tests that a url with mixed encoding has uniform encoding after recoding"""
-    url = u'http://www.yelp.com/m%C3%BCnchen?m%FCnchen'
+    url = 'http://www.yelp.com/m%C3%BCnchen?m%FCnchen'
     assert E.recode_uri(url) == 'http://www.yelp.com/m%C3%BCnchen?m%C3%BCnchen'
 
 
 def test_mixed_quoting_multiple_queries():
     """Tests that a url with mixed quoting in multiple parameters has uniform quoting after requoting"""
-    url = u'http://yelp.com/münchen/m%C3%BCnchen?münchen=m%C3%BCnchen&htmlchars=<">'
+    url = 'http://yelp.com/münchen/m%C3%BCnchen?münchen=m%C3%BCnchen&htmlchars=<">'
     assert E.recode_uri(url) == \
         'http://yelp.com/m%C3%BCnchen/m%C3%BCnchen?m%C3%BCnchen=m%C3%BCnchen&htmlchars=%3C%22%3E'
 
 
 def test_utf8_url():
     """Tests that a url with mixed quoting in multiple parameters has uniform quoting after requoting"""
-    url = u'http://yelp.com/münchen/m%C3%BCnchen?münchen=m%C3%BCnchen&htmlchars=<">'.encode('utf-8')
+    url = 'http://yelp.com/münchen/m%C3%BCnchen?münchen=m%C3%BCnchen&htmlchars=<">'.encode()
     assert E.recode_uri(url) == \
         'http://yelp.com/m%C3%BCnchen/m%C3%BCnchen?m%C3%BCnchen=m%C3%BCnchen&htmlchars=%3C%22%3E'
 
 
 def test_multiple_escapes():
-    url = u'http://münch.com?zero=münch&one=m%C3%BCnch&two=m%25C3%25BCnch&three=m%2525C3%2525BCnch'
+    url = 'http://münch.com?zero=münch&one=m%C3%BCnch&two=m%25C3%25BCnch&three=m%2525C3%2525BCnch'
     assert E.recode_uri(url) == \
         'http://xn--mnch-0ra.com?zero=m%C3%BCnch&one=m%C3%BCnch&two=m%25C3%25BCnch&three=m%2525C3%2525BCnch'
 
@@ -129,29 +124,29 @@ def test_param_xss():
 def test_letters_recoding():
     """Tests that alphanumeric escapes get unquoted in recode_uri."""
     url = (
-        u'http://💩.la/%74%68%69%73%5f%69%73%5f%61%5f%70%61%74%68'
-        u'?a=b%3f%63&%64%3D%65=f#%73%70%61%63%65%73 %61%72%65 %64%61%6e%67%65%72%6f%75%73'
+        'http://💩.la/%74%68%69%73%5f%69%73%5f%61%5f%70%61%74%68'
+        '?a=b%3f%63&%64%3D%65=f#%73%70%61%63%65%73 %61%72%65 %64%61%6e%67%65%72%6f%75%73'
     )
     assert E.recode_uri(url) == \
         'http://xn--ls8h.la/this_is_a_path?a=b%3fc&d%3De=f#spaces%20are%20dangerous'
 
 
 def worst_case(strange_character):
-    u"""
+    """
     generate a worst-case url, using a "strange" character
 
     >>> print(worst_case(u'ü'))
     http://ü:ü@www.ü.com/ü;ü;ü/ü;ü;ü?ü=ü&ü=ü#!ü/ü
     """
     template = ('http://', ':', '@www.', '.com/', ';', ';', '/', ';', ';', '?', '=', '&', '=', '#!', '/', '')
-    if isinstance(strange_character, six.binary_type):
+    if isinstance(strange_character, bytes):
         template = (part.encode('US-ASCII') for part in template)
     return strange_character.join(template)
 
 
 def test_worst_case_unicode():
     # Test both unicode and utf8-bytes
-    for umlaut in (u'ü', 'ü'):
+    for umlaut in ('ü', 'ü'):
         strange_url = worst_case(umlaut)
         normalized_url = E.recode_uri(strange_url)
 
@@ -177,7 +172,7 @@ def test_worst_case_ascii():
 def test_bad_bytes():
     # This is unlikely to happen except due to gross programming error,
     # but I want to show what *would* happen.
-    for bad_stuff in (u'\xFF', b'\xFF', u'%FF', b'%FF'):
+    for bad_stuff in ('\xFF', b'\xFF', '%FF', b'%FF'):
         strange_url = worst_case(bad_stuff)
         normalized_url = E.recode_uri(strange_url)
 
@@ -240,10 +235,10 @@ def test_path_only_url():
 
 
 examples = pytest.mark.parametrize(('charname', 'chars', 'pathchars', 'expected_url'), [
-    ('latin1', u'ü', u'\x81', 'http://xn--mnchen-3ya.com/m%C3%BCchen/%C2%81'),
-    ('win1252', u'€', '', 'http://xn--mnchen-ic1c.com/m%E2%82%ACchen/'),
-    ('utf8', u'プŁ☃', '', 'http://xn--mnchen-3db6836e0mua.com/m%E3%83%97%C5%81%E2%98%83chen/'),
-    ('emoji', u'🐱', '', 'http://xn--mnchen-i844e.com/m%F0%9F%90%B1chen/'),
+    ('latin1', 'ü', '\x81', 'http://xn--mnchen-3ya.com/m%C3%BCchen/%C2%81'),
+    ('win1252', '€', '', 'http://xn--mnchen-ic1c.com/m%E2%82%ACchen/'),
+    ('utf8', 'プŁ☃', '', 'http://xn--mnchen-3db6836e0mua.com/m%E3%83%97%C5%81%E2%98%83chen/'),
+    ('emoji', '🐱', '', 'http://xn--mnchen-i844e.com/m%F0%9F%90%B1chen/'),
     ('ascii', '-._~%', "!$&'()*+,;=:@", "http://m-._~%nchen.com/m-._~%chen/!$&'()*+,;=:@")
 ])
 
@@ -251,7 +246,7 @@ examples = pytest.mark.parametrize(('charname', 'chars', 'pathchars', 'expected_
 @examples
 def test_recode_unicode(charname, chars, pathchars, expected_url):
     del charname  # passed, but unused
-    url_template = u"http://m{chars}nchen.com/m{chars}chen/{pathchars}"
+    url_template = "http://m{chars}nchen.com/m{chars}chen/{pathchars}"
     unicode_url = url_template.format(chars=chars, pathchars=pathchars)
     assert E.recode_uri(unicode_url) == expected_url
 
@@ -259,7 +254,7 @@ def test_recode_unicode(charname, chars, pathchars, expected_url):
 @examples
 @pytest.mark.parametrize('encoding', ('latin1', 'windows-1252', 'utf8', 'ascii'))
 def test_recode_encoded(charname, chars, pathchars, expected_url, encoding):
-    url_template = u"http://m{chars}nchen.com/m{chars}chen/{pathchars}"
+    url_template = "http://m{chars}nchen.com/m{chars}chen/{pathchars}"
     unicode_url = url_template.format(chars=chars, pathchars=pathchars)
 
     try:
@@ -280,9 +275,9 @@ def test_recode_encoded(charname, chars, pathchars, expected_url, encoding):
         assert E.recode_uri(quoted_url) == expected_url
 
 
-class TestUnquoteBytes(object):
-    ASCII = b''.join(six.int2byte(c) for c in range(0x80))
-    NON_ASCII = b''.join(six.int2byte(c) for c in range(0x80, 0x100))
+class TestUnquoteBytes:
+    ASCII = b''.join(bytes((c,)) for c in range(0x80))
+    NON_ASCII = b''.join(bytes((c,)) for c in range(0x80, 0x100))
 
     @staticmethod
     def assert_unquote_bytes(input_value, expected):
@@ -308,12 +303,12 @@ class TestUnquoteBytes(object):
         self.assert_unquote_bytes(quoted_url, unquoted_url)
 
 
-class TestRecodeEmail(object):
-    munchen = u'münchen'
-    email = u'{munchen}@{munchen}.com?subject={munchen}'.format(munchen=munchen)
+class TestRecodeEmail:
+    munchen = 'münchen'
+    email = '{munchen}@{munchen}.com?subject={munchen}'.format(munchen=munchen)
 
     # The username is best encoded as simply utf8.
-    expected = u'{utf8_munchen}@{idna_munchen}.com?subject={percent_munchen}'.format(
+    expected = '{utf8_munchen}@{idna_munchen}.com?subject={percent_munchen}'.format(
         utf8_munchen=munchen,
         idna_munchen=munchen.encode('IDNA').decode('US-ASCII'),
         percent_munchen=quote(munchen.encode('UTF-8')),
@@ -324,7 +319,7 @@ class TestRecodeEmail(object):
         assert E.encode_email('') == ''
 
     def test_not_an_email(self):
-        not_an_email = u"They don't use email in " + self.munchen
+        not_an_email = "They don't use email in " + self.munchen
         assert E.encode_email(not_an_email) == not_an_email.encode('IDNA').decode('US-ASCII')
 
     def test_encode_email(self):

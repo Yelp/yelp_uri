@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 # Generated automatically. To regenerate:
 #    ./bin/generate-tlds > yelp_uri/tlds/all.py
 all_tlds = '|'.join((

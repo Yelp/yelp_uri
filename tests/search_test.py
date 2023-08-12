@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
 import pytest
-import six
 
 from yelp_uri.search import email_regex
 from yelp_uri.search import url_regex
@@ -16,7 +14,7 @@ def test_email_regex():
         match = email_regex.search(text)
         assert match
         user, domain = match.groups()
-        assert '%s@%s' % (user, domain) == email
+        assert f'{user}@{domain}' == email
 
     def assert_no_email(text):
         assert not email_regex.search(text)
@@ -24,9 +22,7 @@ def test_email_regex():
     assert_finds_email('i_love_yelp@yahoo.com')
     assert_finds_email('Tom+Yelp@yahoo.com')
     assert_finds_email('info@te-aro.ca')
-    assert_finds_email(u'Soirée@yelp.com')
-    if not six.PY3:  # Regexes aren't valid for both bytes and str in py3
-        assert_finds_email(u'Soirée@yelp.com'.encode('utf8'))
+    assert_finds_email('Soirée@yelp.com')
     assert_finds_email('"Tom H" <Tom@yahoo.com>', 'Tom@yahoo.com')
     assert_finds_email('Email me at dave@yelp.com.', 'dave@yelp.com')
     assert_finds_email(
@@ -40,7 +36,7 @@ def test_email_regex():
     assert_no_email('Log in with http://guest@example.com...')
 
 
-class RegexAssertion(object):
+class RegexAssertion:
     def __init__(self, regex):
         self.url_regex = regex
 
@@ -81,9 +77,9 @@ def assert_url_regex(regex_assert):
     regex_assert.finds_whole_url('www.audrey_tsang.com')
     regex_assert.finds_whole_url('http://a.com')
     regex_assert.finds_whole_url('http://who_even_uses_dot_mobi.mobi')
-    regex_assert.finds_whole_url(u'http://www.yelp.com/münchen')
-    regex_assert.finds_whole_url(u'http://www.ü.com/ü;ü;ü/ü;ü;ü?ü=ü&ü=ü#!ü/ü')
-    regex_assert.finds_whole_url(u'http://➡.ws/➡;➡;➡/➡;➡;➡?➡=➡&➡=➡#!➡/➡')
+    regex_assert.finds_whole_url('http://www.yelp.com/münchen')
+    regex_assert.finds_whole_url('http://www.ü.com/ü;ü;ü/ü;ü;ü?ü=ü&ü=ü#!ü/ü')
+    regex_assert.finds_whole_url('http://➡.ws/➡;➡;➡/➡;➡;➡?➡=➡&➡=➡#!➡/➡')
     regex_assert.finds_whole_url('http://y.combinator')
     regex_assert.finds_whole_url('http://.ocregion.com')
 
@@ -163,23 +159,15 @@ def test_url_regex_i18n():
 
     # We now know the list of non-ascii top-level domains as well:
     a.finds_url(
-        u'This is a website: 中国互联网络信息中心.中国. No, really.',
-        u'中国互联网络信息中心.中国'
+        'This is a website: 中国互联网络信息中心.中国. No, really.',
+        '中国互联网络信息中心.中国'
     )
-    # We can't find internationalized TLDs in encoded strings, however.
-    if not six.PY3:  # Regexes aren't valid for both bytes and str in py3
-        a.finds_no_url(u'This is a website: 中国互联网络信息中心.中国. No, really.'.encode('UTF-8'))
 
     # But we should be able to find the punycoded TLDs in both cases:
     a.finds_url(
-        u'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.',
-        u'中国互联网络信息中心.xn--fiqs8s'
+        'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.',
+        '中国互联网络信息中心.xn--fiqs8s'
     )
-    if not six.PY3:  # Regexes aren't valid for both bytes and str in py3
-        a.finds_url(
-            u'This is a website: 中国互联网络信息中心.xn--fiqs8s. No, really.'.encode('UTF-8'),
-            u'中国互联网络信息中心.xn--fiqs8s'.encode('UTF-8')
-        )
 
 
 @pytest.mark.parametrize('test_input,expected', [
